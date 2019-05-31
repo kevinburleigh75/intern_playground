@@ -27,7 +27,7 @@ show how instances (e.g., those in ASGs) can retrieve those secrets~~
   - You can't just give the role AmazonSSMFullAccess in the template; it doesn't work
   - Need to use IAM user for access to parameterstore (have not figured it out personally without using own admin)
 
- - Figure out double Rotations
+- Figure out double Rotations
   - Implemented own double rotation lambda function
   - Also found one online (after I made own :( )
-  - Current bottleneck is figuring out why users do not have permissions to change the passwords of another user 
+  - Current bottleneck is figuring out why users do not have permissions to change the passwords of another user
