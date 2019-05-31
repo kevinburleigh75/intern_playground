@@ -1,0 +1,12 @@
+// Retrieving secret from an ec2 instance
+
+// Presetup (Currently manual)
+//     Existing secrets
+//     User which can access secrets
+
+// Requirements on Image:
+//    AWS CLI tools
+//    jq command line tool for parsing json
+//    AWS config; need to add secret for user
+//        with json response, and region
+//    PSQL Config on server

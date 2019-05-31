@@ -1,0 +1,49 @@
+
+// Attempt to get secret value.
+// CLI
+
+aws secretsmanager get-secret-value --secret-id WLHDBSecret
+
+// Get information from the secret.
+// Relies on jq, a command line tool not in default mac.
+// Our aws config must also be json!
+
+// Obtain full JSON
+secret=$(aws secretsmanager get-secret-value --secret-id WLHDBSecret | jq .SecretString | jq fromjson)
+
+// Obtain username, password, etc
+user=$(echo $secret | jq -r .username)
+password=$(echo $secret | jq -r .password)
+endpoint=$(echo $secret | jq -r .host)
+port=$(echo $secret | jq -r .port)
+
+// Connecting to server
+PGPASSWORD=$password psql -h $endpoint -U $user -p $port postgres
+
+// Password rotation is automatically set.
+// Trigger secret rotation now!
+aws secretsmanager rotate-secret --secret-id test_secret_1
+
+
+
+// Can easily set up similar password in parameterstore
+// Just the same json with the password that CLI
+
+aws ssm get-parameters --names WLHSecretTest
+
+// However, updating and rotating must be done manually
+// Can create script/ lambda function
+// Must randomly generate password by self
+// Might as well use the S3 AWS - must implement password change manually
+// A bit more complicated than a simple role
+//
+// Have to use IAM to obtain; cannot just attatch
+
+
+
+// Doubling Rotation
+// Pulling Old Secrets
+aws secretsmanager get-secret-value --secret-id WLHDBSecret --version-stage AWSPREVIOUS
+
+// Save before new lambda test
+// masteruser, i3btLr(cneQG`]Kb!~,6Esi,p)IIA9Ar
