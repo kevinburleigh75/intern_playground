@@ -1,0 +1,6 @@
+source 'https://rubygems.org' do
+  gem 'json-schema'
+  gem 'json_schemer'
+  gem 'rj_schema'
+  gem 'json_schema'
+end

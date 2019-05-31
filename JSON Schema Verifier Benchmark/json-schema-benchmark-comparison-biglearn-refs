@@ -1,0 +1,18 @@
+_____BiglearnTestJsonRefs.json_____
+json-schema:                 19.893804999999702 true
+json_schemer:                4.653611000045203 true
+Rj_schema:                   0.6161250000004657 true
+json_schemer vs json-schema: 4.274917907793854x speedup
+rj_schema vs json-schema:    32.288585920040035x speedup
+_____ecosystem_request.json_____
+json-schema:                 47.856489999976475 true
+json_schemer:                10.602560999977868 true
+Rj_schema:                   0.721079999988433 true
+json_schemer vs json-schema: 4.51367268720042x speedup
+rj_schema vs json-schema:    66.36779552996083x speedup
+_____BigLearnTestJSON1.json_____
+json-schema:                 70.55672799999593 true
+json_schemer:                13.514900999958627 true
+Rj_schema:                   0.4535010000108741 true
+json_schemer vs json-schema: 5.220661845781328x speedup
+rj_schema vs json-schema:    155.5822986019967x speedup

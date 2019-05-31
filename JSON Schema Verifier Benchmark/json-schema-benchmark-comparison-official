@@ -1,0 +1,224 @@
+_____uniqueItems.json_____
+json-schema
+json-schema:                 0.10144200001377612 true
+json_schemer:                0.01871400000527501 true
+Rj_schema:                   0.012263000011444092 true
+json_schemer vs json-schema: 5.420647642683667x speedup
+rj_schema vs json-schema:    8.272200923029299x speedup
+_____minItems.json_____
+json-schema
+json-schema:                 0.05580299999564886 true
+json_schemer:                0.007901000033598393 true
+Rj_schema:                   0.007718000037129968 true
+json_schemer vs json-schema: 7.06277683310352x speedup
+rj_schema vs json-schema:    7.230240959729236x speedup
+_____additionalProperties.json_____
+json-schema
+json-schema:                 0.13220699998782948 true
+json_schemer:                0.03413499996531755 true
+Rj_schema:                   0.01080700004240498 true
+json_schemer vs json-schema: 3.8730628423072155x speedup
+rj_schema vs json-schema:    12.233459745449233x speedup
+_____zeroTerminatedFloats.json_____
+json-schema
+json-schema:                 0.04254300001775846 true
+json_schemer:                0.0044930000440217555 true
+Rj_schema:                   0.007280999969225377 true
+json_schemer vs json-schema: 9.468729045388022x speedup
+rj_schema vs json-schema:    5.843016096356967x speedup
+_____dependencies.json_____
+json-schema
+json-schema:                 0.16485200001625344 true
+json_schemer:                0.03871299995807931 true
+Rj_schema:                   0.011792000033892691 true
+json_schemer vs json-schema: 4.258311166656286x speedup
+rj_schema vs json-schema:    13.979986392675888x speedup
+_____bignum.json_____
+json-schema
+json-schema:                 0.11785099998814985 true
+json_schemer:                0.023397999990265816 true
+Rj_schema:                   0.009365999954752624 true
+json_schemer vs json-schema: 5.036798018513504x speedup
+rj_schema vs json-schema:    12.582852931613381x speedup
+_____anyOf.json_____
+json-schema
+json-schema:                 0.10716499999398366 true
+json_schemer:                0.02220899995882064 true
+Rj_schema:                   0.009642000019084662 true
+json_schemer vs json-schema: 4.825296059826478x speedup
+rj_schema vs json-schema:    11.11439533103808x speedup
+_____not.json_____
+json-schema
+json-schema:                 0.11398199998075143 true
+json_schemer:                0.017186000011861324 true
+Rj_schema:                   0.01065999997081235 true
+json_schemer vs json-schema: 6.632258809617366x speedup
+rj_schema vs json-schema:    10.692495337039421x speedup
+_____items.json_____
+json-schema
+json-schema:                 0.13913299998966977 true
+json_schemer:                0.032642000005580485 true
+Rj_schema:                   0.01340100000379607 true
+json_schemer vs json-schema: 4.262392009248317x speedup
+rj_schema vs json-schema:    10.382284900399812x speedup
+_____enum.json_____
+json-schema
+json-schema:                 0.10689400002593175 true
+json_schemer:                0.019794999971054494 true
+Rj_schema:                   0.011031000001821667 true
+json_schemer vs json-schema: 5.400050527013839x speedup
+rj_schema vs json-schema:    9.690327260291832x speedup
+_____minProperties.json_____
+json-schema
+json-schema:                 0.06699999998090789 true
+json_schemer:                0.011575000011362135 true
+Rj_schema:                   0.009611000015866011 true
+json_schemer vs json-schema: 5.788336925714041x speedup
+rj_schema vs json-schema:    6.971178844064414x speedup
+_____properties.json_____
+json-schema
+json-schema:                 0.1194460000260733 true
+json_schemer:                0.02455899998312816 true
+Rj_schema:                   0.010621000023093075 true
+json_schemer vs json-schema: 4.863634517208834x speedup
+rj_schema vs json-schema:    11.246210316012027x speedup
+_____maxLength.json_____
+json-schema
+json-schema:                 0.059794000000692904 true
+json_schemer:                0.007587999978568405 true
+Rj_schema:                   0.007618000032380223 true
+json_schemer vs json-schema: 7.880073823085853x speedup
+rj_schema vs json-schema:    7.849041709968388x speedup
+_____minimum.json_____
+json-schema
+json-schema:                 0.11369400005787611 true
+json_schemer:                0.024620999989565462 true
+Rj_schema:                   0.010891999991144985 true
+json_schemer vs json-schema: 4.617765326593573x speedup
+rj_schema vs json-schema:    10.438303355702116x speedup
+_____oneOf.json_____
+json-schema
+json-schema:                 0.13933699997141957 true
+json_schemer:                0.028747999982442707 true
+Rj_schema:                   0.010834000015165657 true
+json_schemer vs json-schema: 4.846841521375991x speedup
+rj_schema vs json-schema:    12.861085451022038x speedup
+_____additionalItems.json_____
+json-schema
+json-schema:                 0.09977999998955056 true
+json_schemer:                0.017343000043183565 true
+Rj_schema:                   0.010901000001467764 true
+json_schemer vs json-schema: 5.753329858796129x speedup
+rj_schema vs json-schema:    9.153288686920071x speedup
+_____pattern.json_____
+json-schema
+json-schema:                 0.06252699997276068 true
+json_schemer:                0.007634000037796795 true
+Rj_schema:                   0.00899200001731515 true
+json_schemer vs json-schema: 8.190594663765058x speedup
+rj_schema vs json-schema:    6.953625428420553x speedup
+_____definitions.json_____
+json-schema
+json-schema:                 0.05352599994512275 true
+json_schemer:                0.005407000018749386 true
+Rj_schema:                   0.007594999973662198 true
+json_schemer vs json-schema: 9.899389635567832x speedup
+rj_schema vs json-schema:    7.047531287786601x speedup
+_____maxProperties.json_____
+json-schema
+json-schema:                 0.06308699998771772 true
+json_schemer:                0.008854999963659793 true
+Rj_schema:                   0.007660000002942979 true
+json_schemer vs json-schema: 7.124449491431021x speedup
+rj_schema vs json-schema:    8.235900778522145x speedup
+_____required.json_____
+json-schema
+json-schema:                 0.0913849999778904 true
+json_schemer:                0.01382200000807643 true
+Rj_schema:                   0.01027199998497963 true
+json_schemer vs json-schema: 6.611561273657401x speedup
+rj_schema vs json-schema:    8.896514808364422x speedup
+_____ecmascript-regex.json_____
+json-schema
+json-schema:                 0.042757000017445534 true
+json_schemer:                0.0028389999642968178 true
+Rj_schema:                   0.007556000025942922 true
+json_schemer vs json-schema: 15.060584908473526x speedup
+rj_schema vs json-schema:    5.658681825124774x speedup
+_____type.json_____
+json-schema
+json-schema:                 0.39960300002712756 true
+json_schemer:                0.11963299999479204 true
+Rj_schema:                   0.017225999967195094 true
+json_schemer vs json-schema: 3.340240569445917x speedup
+rj_schema vs json-schema:    23.197666364108024x speedup
+_____default.json_____
+json-schema
+json-schema:                 0.06171599996741861 true
+json_schemer:                0.007718999986536801 true
+Rj_schema:                   0.007993999985046685 true
+json_schemer vs json-schema: 7.995336193167692x speedup
+rj_schema vs json-schema:    7.72029022802884x speedup
+_____multipleOf.json_____
+json-schema
+json-schema:                 0.08205999998608604 true
+json_schemer:                0.0136009999550879 true
+Rj_schema:                   0.009599999990314245 true
+json_schemer vs json-schema: 6.0333799174367915x speedup
+rj_schema vs json-schema:    8.54791667384157x speedup
+_____patternProperties.json_____
+json-schema
+json-schema:                 0.11773499997798353 true
+json_schemer:                0.02565700002014637 true
+Rj_schema:                   0.011648999992758036 true
+json_schemer vs json-schema: 4.588806169292425x speedup
+rj_schema vs json-schema:    10.106876131099423x speedup
+_____refRemote.json_____
+json-schema
+json-schema:                 0.1387040000408888 true
+json_schemer:                0.029454000003170222 true
+Rj_schema:                   0.010975000041071326 true
+json_schemer vs json-schema: 4.7091736275534615x speedup
+rj_schema vs json-schema:    12.638177632967842x speedup
+_____allOf.json_____
+json-schema
+json-schema:                 0.14153399999486282 true
+json_schemer:                0.03065899998182431 true
+Rj_schema:                   0.012546000012662262 true
+json_schemer vs json-schema: 4.6163932313111635x speedup
+rj_schema vs json-schema:    11.281205153197613x speedup
+_____format.json_____
+json-schema
+json-schema:                 0.2428879999788478 true
+json_schemer:                0.06228800001554191 true
+Rj_schema:                   0.013066000014077872 true
+json_schemer vs json-schema: 3.899434881810993x speedup
+rj_schema vs json-schema:    18.589315759769615x speedup
+_____ref.json_____
+json-schema
+json-schema:                 0.2033740000333637 true
+json_schemer:                0.047688999969977885 true
+Rj_schema:                   0.015200000023469329 true
+json_schemer vs json-schema: 4.264589321675768x speedup
+rj_schema vs json-schema:    13.37986840258863x speedup
+_____maximum.json_____
+json-schema
+json-schema:                 0.09174699999857694 true
+json_schemer:                0.022455999976955354 true
+Rj_schema:                   0.00890900002559647 true
+json_schemer vs json-schema: 4.085634133092667x speedup
+rj_schema vs json-schema:    10.298237707372142x speedup
+_____minLength.json_____
+json-schema
+json-schema:                 0.06101100001251325 true
+json_schemer:                0.009034999995492399 true
+Rj_schema:                   0.00761700002476573 true
+json_schemer vs json-schema: 6.7527393517378975x speedup
+rj_schema vs json-schema:    8.00984637181877x speedup
+_____maxItems.json_____
+json-schema
+json-schema:                 0.05398199998307973 true
+json_schemer:                0.007852000009734184 true
+Rj_schema:                   0.007593999966047704 true
+json_schemer vs json-schema: 6.87493631127838x speedup
+rj_schema vs json-schema:    7.108506745381861x speedup
