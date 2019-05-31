@@ -1,7 +1,7 @@
 
 ## Targets
 
- - ~~write a CLI tool to put secrets into SM/PS
+- ~~write a CLI tool to put secrets into SM/PS
 show how instances (e.g., those in ASGs) can retrieve those secrets~~
   - Wrote script to connect existing instance to database, if secret and database are set up beforehand (and there is a special user with only secret permissions)
   - We can use IAM permissions to give secret access to the images themselves. Magic. s
