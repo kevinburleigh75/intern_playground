@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Resources:
+
+  ## Create a group that will contain the users
+  ## that we want to be able to assume these weird roles.
+  CanAssumeRolesGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      ## NOTE: (from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html#cfn-iam-role-rolename)
+      ##   "Naming an IAM resource can cause an unrecoverable error
+      ##    if you reuse the same template in multiple Regions."
+      ## So make sure that isn't happening here.
+      GroupName: !Sub ${AWS::StackName}-CanAssumeRolesGroup-${AWS::Region}
+
+  ## Create a role with the abilities that our
+  ## EC2 instances will need.
+  Ec2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ## NOTE: (from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html#cfn-iam-role-rolename)
+      ##   "Naming an IAM resource can cause an unrecoverable error
+      ##    if you reuse the same template in multiple Regions."
+      ## So make sure that isn't happening here.
+      RoleName: !Sub ${AWS::StackName}-Ec2InstanceRole-${AWS::Region}
+
+      ## The AssumeRolePolicyDocument describes
+      ## who (or what) can take on this role.
+      ## These are the "trust policies".
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          ## Allow EC2 to assume this role on our behalf.
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+          ## Allow users in our account to assume this role,
+          ## if they have permission.
+          - Effect: Allow
+            Principal:
+              AWS:
+                - !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - sts:AssumeRole
+
+      ## The list of AWS-managed policies
+      ## attached to this role.  These are managed
+      ## actions that this role allows.
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AutoScalingFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+
+      ## A list if inline policies attached
+      ## directly to this role.  These are custom
+      ## actions that this role allows.
+      Policies:
+        - PolicyName: 'AllowEc2InstanceTagModificationPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              ## Allow changes (additions/deletions) of tags
+              ## from EC2 instances.
+              - Sid: 'AllowEc2InstanceTagChanges'
+                Effect: Allow
+                Action:
+                  - 'ec2:DeleteTags'
+                  - 'ec2:CreateTags'
+                Resource: 'arn:aws:ec2:*:*:instance/*'
+
+  ## Create an instance profile so that EC2 instances
+  ## can assume the Ec2InstanceRole role.
+  Ec2InstanceRoleInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub ${AWS::StackName}-Ec2InstanceRoleProfile-${AWS::Region}
+      Roles:
+        - !Ref Ec2InstanceRole
+
+  ## Attach a policy to our user group that gives it
+  ## the power to assume the Ec2InstanceRole.
+  AllowDevsToAssumeEc2InstanceRolePolicy:
+    Type: AWS::IAM::Policy
+    DependsOn: "CanAssumeRolesGroup"
+    Properties:
+      Groups:
+        - !Sub ${AWS::StackName}-CanAssumeRolesGroup-${AWS::Region}
+      PolicyName: AllowDevsToAssumeEc2InstanceRolePolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Resource: !GetAtt Ec2InstanceRole.Arn
+
+Outputs:
+
+  Ec2InstanceRoleOutput:
+    Description: 'The role for EC2 AutoScaling groups instances.'
+    Value: !Ref Ec2InstanceRole
+    Export:
+      Name: !Sub ${AWS::StackName}-Ec2InstanceRole
+
+  Ec2InstanceRoleInstanceProfileArnOutput:
+    Description: 'The InstanceProfileArn for Ec2InstanceRole.'
+    Value: !GetAtt Ec2InstanceRoleInstanceProfile.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-Ec2InstanceRoleInstanceProfileArn
