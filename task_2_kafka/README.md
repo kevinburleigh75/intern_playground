@@ -1,12 +1,12 @@
-
+debug
 ## Targets
 
 - AWS Kafka template
 
   - Summary of Findings
-    - Kafka and MSK exist, but do not have some features that indicate that there will be further expansion on MSK later (e.g., no templates, failure of the command line to return things without the debuf function) or furhter issues.
+    - Kafka and MSK exist, but do not have some features that indicate that there will be further expansion on MSK later (e.g., no templates, failure of the command line to return things without the debuf function) or further issues.
     - Also, testing kafka is incredibly annoying or expensive; there is no way to simply stop a kafka cluster; you have to shut it down and restart.
-    - There are kafka ami's avalible in EC2 (community), but I have not looked into using those.
+    - There are kafka ami's available in EC2 (community), but I have not looked into using those.
   - end goal:
     - we want to distribute immutable event histories to other systems for analysis
   - initial target:
