@@ -1,0 +1,390 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "VpcStackName": {
+            "Description": "name of the VPC stack this db should be placed in",
+            "Type": "String",
+            "ConstraintDescription": "must be a valid VpcTemplate stack name"
+        },
+        "EnvName": {
+            "Description": "Name for this environment",
+            "Type": "String",
+            "ConstraintDescription": "'production' is special because image update will not occur, but otherwise almost anything goes"
+        },
+        "RepoUrl": {
+            "Description": "URL for git clone operation",
+            "Type": "String",
+            "ConstraintDescription": "must be the URL of an existing GitHub repo (applies only to non-production environments)"
+        },
+        "BranchNameOrSha": {
+            "Description": "git branch name (latest) or SHA to be used",
+            "Type": "String",
+            "ConstraintDescription": "must be the name of a valid branch or SHA (ignored in 'production' environment)"
+        },
+        "ElbAsgStackTemplateUrl": {
+            "Description": "S3 template URL",
+            "Type": "String",
+            "ConstraintDescription": "must point to a valid template"
+        },
+        "SimpleAsgStackTemplateUrl": {
+            "Description": "S3 template URL",
+            "Type": "String",
+            "ConstraintDescription": "must point to a valid template"
+        },
+        "NonMigrationImageId": {
+            "Description": "AMI to use in the non-migration LaunchConfiguration",
+            "Type": "AWS::EC2::Image::Id",
+            "ConstraintDescription": "must be the id of a valid AMI"
+        },
+        "OneAsgDesiredCapacity": {
+            "Description": "The DesiredCapacity of OneAsg",
+            "Type": "Number",
+            "ConstraintDescription": "Must be between MinSize and MaxSize (inclusive)"
+        },
+        "TwoAsgDesiredCapacity": {
+            "Description": "The DesiredCapacity of TwoAsg",
+            "Type": "Number",
+            "ConstraintDescription": "Must be between MinSize and MaxSize (inclusive)"
+        },
+        "MigrationImageId": {
+            "Description": "AMI to use in the migration LaunchConfiguration",
+            "Type": "AWS::EC2::Image::Id",
+            "ConstraintDescription": "must be the id of a valid AMI"
+        },
+        "CreationAsgDesiredCapacity": {
+            "Description": "The DesiredCapacity of CreationAsg",
+            "Type": "Number",
+            "ConstraintDescription": "Must be between MinSize and MaxSize (inclusive)"
+        },
+        "MigrationAsgDesiredCapacity": {
+            "Description": "The DesiredCapacity of MigrationAsg",
+            "Type": "Number",
+            "ConstraintDescription": "Must be between MinSize and MaxSize (inclusive)"
+        },
+        "EventCreateAsgDesiredCapacity": {
+            "Description": "The DesiredCapacity of EventCreateAsg",
+            "Type": "Number",
+            "ConstraintDescription": "Must be between MinSize and MaxSize (inclusive)"
+        },
+        "EventBundleAsgDesiredCapacity": {
+            "Description": "The DesiredCapacity of EventBundleAsg",
+            "Type": "Number",
+            "ConstraintDescription": "Must be between MinSize and MaxSize (inclusive)"
+        },
+        "EventFetchAsgDesiredCapacity": {
+            "Description": "The DesiredCapacity of EventFetchAsg",
+            "Type": "Number",
+            "ConstraintDescription": "Must be between MinSize and MaxSize (inclusive)"
+        },
+        "KeyName": {
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "ConstraintDescription": "must be the name of an existing EC2 KeyPair"
+        }
+    },
+    "Resources": {
+        "Elb": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "SecurityGroups": [
+                    { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SecurityGroupId" } }
+                ],
+                "Subnets": [
+                    { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SubnetId1" } },
+                    { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SubnetId2" } },
+                    { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SubnetId3" } }
+                ]
+            }
+        },
+        "ElbDns": {
+            "Type": "AWS::Route53::RecordSetGroup",
+            "Properties": {
+                "HostedZoneName": "klb75.net.",
+                "RecordSets": [
+                    {
+                        "Name": { "Fn::Join": ["", [
+                            "elb.",
+                            {"Ref": "AWS::StackName"},
+                            ".klb75.net."]
+                        ] },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": { "Fn::GetAtt": ["Elb", "CanonicalHostedZoneID"] },
+                            "DNSName": { "Fn::GetAtt": ["Elb", "DNSName"] }
+                        }
+                    }
+                ]
+            }
+        },
+        "ElbListener": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "LoadBalancerArn": {
+                    "Ref": "Elb"
+                },
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "ElbGroup1"
+                        }
+                    }
+                ],
+                "Port": "3000",
+                "Protocol": "HTTP"
+            }
+        },
+        "ElbRule1": {
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+            "Properties": {
+                "ListenerArn": {
+                    "Ref": "ElbListener"
+                },
+                "Actions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "ElbGroup1"
+                        }
+                    }
+                ],
+                "Conditions": [
+                    {
+                        "Field": "path-pattern",
+                        "Values": [
+                            "/task1"
+                        ]
+                    }
+                ],
+                "Priority": 1
+            }
+        },
+        "ElbGroup1": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "TargetGroupAttributes": [
+                    {
+                        "Key": "deregistration_delay.timeout_seconds",
+                        "Value": "20"
+                    }
+                ],
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckPath": "/ping",
+                "HealthCheckPort": 8000,
+                "HealthCheckIntervalSeconds": 60,
+                "HealthCheckTimeoutSeconds": 5,
+                "HealthyThresholdCount": 2,
+                "UnhealthyThresholdCount": 10,
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Port": 3000,
+                "Protocol": "HTTP",
+                "VpcId": { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } }
+            }
+        },
+        "ElbRule2": {
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+            "Properties": {
+                "ListenerArn": {
+                    "Ref": "ElbListener"
+                },
+                "Actions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "ElbGroup2"
+                        }
+                    }
+                ],
+                "Conditions": [
+                    {
+                        "Field": "path-pattern",
+                        "Values": [
+                            "/task2"
+                        ]
+                    }
+                ],
+                "Priority": 2
+            }
+        },
+        "ElbGroup2": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "TargetGroupAttributes": [
+                    {
+                        "Key": "deregistration_delay.timeout_seconds",
+                        "Value": "120"
+                    }
+                ],
+                "HealthCheckIntervalSeconds": 20,
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckPath": "/ping",
+                "HealthCheckPort": 8000,
+                "HealthCheckTimeoutSeconds": 2,
+                "HealthyThresholdCount": 2,
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Port": 3000,
+                "Protocol": "HTTP",
+                "UnhealthyThresholdCount": 10,
+                "VpcId": { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } }
+            }
+        },
+        "CreationAsgStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": { "Ref": "SimpleAsgStackTemplateUrl" },
+                "Parameters": {
+                    "EnvName":              { "Ref": "EnvName" },
+                    "RepoUrl":              { "Ref": "RepoUrl" },
+                    "BranchNameOrSha":      { "Ref": "BranchNameOrSha" },
+                    "ImageId":              { "Ref": "MigrationImageId" },
+                    "MinSize":              0,
+                    "MaxSize":              10,
+                    "DesiredCapacity":      { "Ref": "CreationAsgDesiredCapacity" },
+                    "InstanceTagName":      "asg-creation-instance",
+                    "PostCfnInitCommand":   "/bin/bash -xe /home/ubuntu/primary_repo/services/after_cfn_init_creation.sh",
+                    "KeyName":              { "Ref": "KeyName" }
+                }
+            }
+        },
+        "MigrationAsgStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": { "Ref": "SimpleAsgStackTemplateUrl" },
+                "Parameters": {
+                    "EnvName":              { "Ref": "EnvName" },
+                    "RepoUrl":              { "Ref": "RepoUrl" },
+                    "BranchNameOrSha":      { "Ref": "BranchNameOrSha" },
+                    "ImageId":              { "Ref": "MigrationImageId" },
+                    "MinSize":              0,
+                    "MaxSize":              10,
+                    "DesiredCapacity":      { "Ref": "MigrationAsgDesiredCapacity" },
+                    "InstanceTagName":      "asg-migration-instance",
+                    "PostCfnInitCommand":   "/bin/bash -xe /home/ubuntu/primary_repo/services/after_cfn_init_migration.sh",
+                    "KeyName":              { "Ref": "KeyName" }
+                }
+            }
+        },
+        "OneAsgStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": { "Ref": "ElbAsgStackTemplateUrl" },
+                "Parameters": {
+                    "EnvName":              { "Ref": "EnvName" },
+                    "RepoUrl":              { "Ref": "RepoUrl" },
+                    "BranchNameOrSha":      { "Ref": "BranchNameOrSha" },
+                    "ImageId":              { "Ref": "NonMigrationImageId" },
+                    "MinSize":              0,
+                    "MaxSize":              10,
+                    "DesiredCapacity":      { "Ref": "OneAsgDesiredCapacity" },
+                    "InstanceTagName":      "asg-one-instance",
+                    "TargetGroupArn":       { "Ref": "ElbGroup1" },
+                    "PostCfnInitCommand":   "/bin/bash -xe /home/ubuntu/primary_repo/services/after_cfn_init_one.sh",
+                    "SecurityGroup":        { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SecurityGroupId" } },
+                    "VpcZoneIdentifier": {
+                        "Fn::Join": [ ",", [
+                            { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SubnetId1" } },
+                            { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SubnetId2" } },
+                            { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SubnetId3" } }
+                        ]]
+                    },
+                    "KeyName":              { "Ref": "KeyName" }
+                }
+            }
+        },
+        "TwoAsgStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": { "Ref": "ElbAsgStackTemplateUrl" },
+                "Parameters": {
+                    "EnvName":              { "Ref": "EnvName" },
+                    "RepoUrl":              { "Ref": "RepoUrl" },
+                    "BranchNameOrSha":      { "Ref": "BranchNameOrSha" },
+                    "ImageId":              { "Ref": "NonMigrationImageId" },
+                    "MinSize":              0,
+                    "MaxSize":              2,
+                    "DesiredCapacity":      { "Ref": "TwoAsgDesiredCapacity" },
+                    "InstanceTagName":      "asg-two-instance",
+                    "TargetGroupArn":       { "Ref": "ElbGroup2" },
+                    "PostCfnInitCommand":   "/bin/bash -xe /home/ubuntu/primary_repo/services/after_cfn_init_two.sh",
+                    "SecurityGroup":        { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SecurityGroupId" } },
+                    "VpcZoneIdentifier": {
+                        "Fn::Join": [ ",", [
+                            { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SubnetId1" } },
+                            { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SubnetId2" } },
+                            { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-SubnetId3" } }
+                        ]]
+                    },
+                    "KeyName":              { "Ref": "KeyName" }
+                }
+            }
+        },
+        "EventCreateAsgStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": { "Ref": "SimpleAsgStackTemplateUrl" },
+                "Parameters": {
+                    "EnvName":              { "Ref": "EnvName" },
+                    "RepoUrl":              { "Ref": "RepoUrl" },
+                    "BranchNameOrSha":      { "Ref": "BranchNameOrSha" },
+                    "ImageId":              { "Ref": "NonMigrationImageId" },
+                    "MinSize":              0,
+                    "MaxSize":              30,
+                    "DesiredCapacity":      { "Ref": "EventCreateAsgDesiredCapacity" },
+                    "InstanceTagName":      "asg-event-create-instance",
+                    "PostCfnInitCommand":   "/bin/bash -xe /home/ubuntu/primary_repo/services/after_cfn_init_event_create.sh",
+                    "KeyName":              { "Ref": "KeyName" }
+                }
+            }
+        },
+        "EventBundleAsgStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": { "Ref": "SimpleAsgStackTemplateUrl" },
+                "Parameters": {
+                    "EnvName":              { "Ref": "EnvName" },
+                    "RepoUrl":              { "Ref": "RepoUrl" },
+                    "BranchNameOrSha":      { "Ref": "BranchNameOrSha" },
+                    "ImageId":              { "Ref": "NonMigrationImageId" },
+                    "MinSize":              0,
+                    "MaxSize":              30,
+                    "DesiredCapacity":      { "Ref": "EventBundleAsgDesiredCapacity" },
+                    "InstanceTagName":      "asg-event-bundle-instance",
+                    "PostCfnInitCommand":   "/bin/bash -xe /home/ubuntu/primary_repo/services/after_cfn_init_event_bundle.sh",
+                    "KeyName":              { "Ref": "KeyName" }
+                }
+            }
+        },
+        "EventFetchAsgStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": { "Ref": "SimpleAsgStackTemplateUrl" },
+                "Parameters": {
+                    "EnvName":              { "Ref": "EnvName" },
+                    "RepoUrl":              { "Ref": "RepoUrl" },
+                    "BranchNameOrSha":      { "Ref": "BranchNameOrSha" },
+                    "ImageId":              { "Ref": "NonMigrationImageId" },
+                    "MinSize":              0,
+                    "MaxSize":              30,
+                    "DesiredCapacity":      { "Ref": "EventFetchAsgDesiredCapacity" },
+                    "InstanceTagName":      "asg-event-fetch-instance",
+                    "PostCfnInitCommand":   "/bin/bash -xe /home/ubuntu/primary_repo/services/after_cfn_init_event_fetch.sh",
+                    "KeyName":              { "Ref": "KeyName" }
+                }
+            }
+        }
+    },
+    "Conditions": {
+        "IsProduction": {
+            "Fn::Equals": [
+                {
+                    "Ref": "EnvName"
+                },
+                "production"
+            ]
+        }
+    }
+}

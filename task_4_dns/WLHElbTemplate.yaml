@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Resources:
+
+  LoadBalancerWLH:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        IpAddressType: String
+        LoadBalancerAttributes:
+          - LoadBalancerAttribute
+        Name: String
+        Scheme: String
+        SecurityGroups:
+          - String
+        SubnetMappings:
+          - SubnetMapping
+        Subnets:
+          - String
+        Tags:
+          - Tag
+        Type: String
