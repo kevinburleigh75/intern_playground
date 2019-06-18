@@ -12,11 +12,7 @@ Resources:
       EnableDnsSupport: true
       Tags:
         - Key: Name
-          Value:
-            !Join
-              - '_'
-              - - !Ref AWS::StackName
-                - Vpc
+          Value: !Sub '${AWS::StackName}_Vpc'
 
   ## An Internet Gateway that, by itself,
   ## doesn't do squat.
@@ -25,11 +21,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value:
-            !Join
-              - '_'
-              - - !Ref AWS::StackName
-                - Igw
+          Value: !Sub '${AWS::StackName}_Igw'
 
   ## Attach the IGW to the VPC.
   GatewayAttachment:
@@ -49,11 +41,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value:
-            !Join
-              - '_'
-              - - !Ref AWS::StackName
-                - Rt
+          Value: !Sub '${AWS::StackName}_Rt'
 
   ## Add a Route to the Route Table which takes
   ## any "unmatched" non-local traffic and
@@ -86,11 +74,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value:
-            !Join
-              - '_'
-              - - !Ref AWS::StackName
-                - SubnetA
+          Value: !Sub '${AWS::StackName}_SubNetA'
 
   SubnetB:
     Type: AWS::EC2::Subnet
@@ -105,11 +89,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value:
-            !Join
-              - '_'
-              - - !Ref AWS::StackName
-                - SubnetB
+          Value: !Sub '${AWS::StackName}_SubNetB'
 
   SubnetC:
     Type: AWS::EC2::Subnet
@@ -124,11 +104,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value:
-            !Join
-              - '_'
-              - - !Ref AWS::StackName
-                - SubnetC
+          Value: !Sub '${AWS::StackName}_SubNetC'
 
   ## Associate SubnetA with our Route Table.
   ## This will allow instances with public IPv4
@@ -164,11 +140,7 @@ Resources:
   OpenSg:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName:
-        !Join
-          - '_'
-          - - !Ref AWS::StackName
-            - OpenSg
+      GroupName: !Sub '${AWS::StackName}_OpenSg'
       GroupDescription: "Wide open to the world so look out!"
       VpcId: !Ref Vpc
       SecurityGroupEgress:
@@ -185,11 +157,7 @@ Resources:
           IpProtocol: -1
       Tags:
         - Key: Name
-          Value:
-            !Join
-              - '_'
-              - - !Ref AWS::StackName
-                - OpenSg
+          Value: !Sub '${AWS::StackName}_OpenSg'
 
 Outputs:
 
@@ -197,48 +165,28 @@ Outputs:
     Description: 'The created VPC'
     Value: !Ref Vpc
     Export:
-      Name:
-        !Join
-          - '-'
-          - - !Ref AWS::StackName
-            - Vpc
+      Name: !Sub '${AWS::StackName}-Vpc'
 
   SubnetAOutput:
     Description: 'Subnet A'
     Value: !Ref SubnetA
     Export:
-      Name:
-        !Join
-          - '-'
-          - - !Ref AWS::StackName
-            - SubnetA
+      Name: !Sub '${AWS::StackName}-SubnetA'
 
   SubnetBOutput:
     Description: 'Subnet B'
     Value: !Ref SubnetB
     Export:
-      Name:
-        !Join
-          - '-'
-          - - !Ref AWS::StackName
-            - SubnetB
+      Name: !Sub '${AWS::StackName}-SubnetB'
 
   SubnetCOutput:
     Description: 'Subnet C'
     Value: !Ref SubnetC
     Export:
-      Name:
-        !Join
-          - '-'
-          - - !Ref AWS::StackName
-            - SubnetC
+      Name: !Sub '${AWS::StackName}-SubnetC'
 
   SecurityGroupOutput:
     Description: 'The wide-open SecurityGroup'
     Value: !Ref OpenSg
     Export:
-      Name:
-        !Join
-          - '-'
-          - - !Ref AWS::StackName
-            - OpenSg
+      Name: !Sub '${AWS::StackName}-OpenSg'
