@@ -27,7 +27,7 @@ Parameters:
     Type: 'AWS::EC2::KeyPair::KeyName'
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
 Resources:
-  ELB:
+  Elb:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
       IpAddressType: ipv4
@@ -45,6 +45,34 @@ Resources:
         - !ImportValue
           'Fn::Sub': '${VpcStackName}-SubnetC'
       Type: "application"
+  ElbListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      LoadBalancerArn: !Ref Elb
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ElbTarget
+      Port: '3000'
+      Protocol: HTTP
+  ElbTarget:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '20'
+      HealthCheckProtocol: HTTP
+      HealthCheckPath: /ping
+      HealthCheckPort: 8000
+      HealthCheckIntervalSeconds: 60
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 10
+      Matcher:
+        HttpCode: '200'
+      Port: 3000
+      Protocol: HTTP
+      VpcId: !ImportValue
+        'Fn::Sub': '${VpcStackName}-Vpc'
   Lc:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
