@@ -1,0 +1,161 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+
+  DatabaseInstanceType:
+    Description: 'The instance type to use for the database.'
+    Type: String
+    AllowedValues:
+      - db.r4.large
+
+  DatabasePassword:
+    Description: 'The database admin account password.'
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9]+'
+    ConstraintDescription: 'Must contain only alphanumeric characters.'
+    MaxLength: 41
+    MinLength: 8
+    NoEcho: true
+
+  DatabaseUsername:
+    Description: 'The database admin account username.'
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9]+'
+    ConstraintDescription: 'Must contain only alphanumeric characters.'
+    MaxLength: 16
+    MinLength: 1
+
+  DatabaseClusterParameterGroupName:
+    Type: String
+    Default: 'default.aurora-postgresql9.6'
+
+  DatabaseBackupRetentionPeriod:
+    Description: 'The database retention period in days.'
+    Type: String
+    Default: 35
+
+  VpcStackName:
+    Description: 'The name of the VPC stack on which to layer this template.'
+    Type: String
+
+  DatabaseSecurityGroups:
+    Description: 'Security groups to apply to the RDS cluster.'
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+
+
+Metadata:
+
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: default.aurora-postgresql9.6
+        Parameters:
+        - VpcStackName
+        - DatabaseInstanceType
+        - DatabaseName
+        - DatabaseUsername
+        - DatabasePassword
+        - DatabaseSubnets
+        - DatabaseSecurityGroups
+        - DatabaseBackupRetentionPeriod
+        - DatabaseClusterParameterGroupName
+    ParameterLabels:
+      VpcStackName:
+        default: 'Vpc Stack Name'
+      DatabaseInstanceType:
+        default: 'Database Instance Type'
+      DatabaseClusterParameterGroupName:
+        default: 'Database Cluster Parameter Group'
+      DatabasePassword:
+        default: 'Database Password'
+      DatabaseUsername:
+        default: 'Database Username'
+      DatabaseBackupRetentionPeriod:
+        default: 'Database Backup Retention Period'
+      DatabaseSecurityGroups:
+        default: 'Database Security Groups'
+
+
+Resources:
+
+  DatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub '${AWS::StackName}-db-sng'
+      SubnetIds:
+        - Fn::ImportValue: !Sub '${VpcStackName}-SubnetA'
+        - Fn::ImportValue: !Sub '${VpcStackName}-SubnetB'
+        - Fn::ImportValue: !Sub '${VpcStackName}-SubnetC'
+
+  DatabaseCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      MasterUsername:
+        Ref: DatabaseUsername
+      MasterUserPassword:
+        Ref: DatabasePassword
+      BackupRetentionPeriod:
+        Ref: DatabaseBackupRetentionPeriod
+      DBClusterParameterGroupName:
+        Ref: DatabaseClusterParameterGroupName
+      PreferredBackupWindow: 02:00-03:00
+      PreferredMaintenanceWindow: mon:03:00-mon:04:00
+      DBSubnetGroupName:
+        Ref: DatabaseSubnetGroup
+      VpcSecurityGroupIds:
+        Ref: DatabaseSecurityGroups
+
+  DatabasePrimaryInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: aurora-postgresql
+      DBClusterIdentifier:
+        Ref: DatabaseCluster
+      DBInstanceClass:
+        Ref: DatabaseInstanceType
+      DBSubnetGroupName:
+        Ref: DatabaseSubnetGroup
+
+  DatabaseReplicaInstance1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: aurora-postgresql
+      DBClusterIdentifier:
+        Ref: DatabaseCluster
+      DBInstanceClass:
+        Ref: DatabaseInstanceType
+      DBSubnetGroupName:
+        Ref: DatabaseSubnetGroup
+
+  DatabaseReplicaInstance2:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: aurora-postgresql
+      DBClusterIdentifier:
+        Ref: DatabaseCluster
+      DBInstanceClass:
+        Ref: DatabaseInstanceType
+      DBSubnetGroupName:
+        Ref: DatabaseSubnetGroup
+
+
+Outputs:
+
+  EndpointUrl:
+    Description: 'URL for read/write access'
+    Value: !GetAtt DatabaseCluster.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-EndpointUrl'
+
+  EndpointPort:
+    Description: 'Connection port'
+    Value: !GetAtt DatabaseCluster.Endpoint.Port
+    Export:
+      Name: !Sub '${AWS::StackName}-EndpointPort'
+
+  ReaderEndpointUrl:
+    Description: 'URL for read-only access'
+    Value: !GetAtt DatabaseCluster.ReadEndpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-ReaderEndpointUrl'
