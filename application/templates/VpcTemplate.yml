@@ -1,0 +1,244 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Resources:
+  ## A VPC that can hold ~65k instances.
+  ## Enable DNS features so we can put
+  ## a publically-accessible instances inside.
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value:
+            !Join
+              - '_'
+              - - !Ref AWS::StackName
+                - Vpc
+
+  ## An Internet Gateway that, by itself,
+  ## doesn't do squat.
+  Igw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value:
+            !Join
+              - '_'
+              - - !Ref AWS::StackName
+                - Igw
+
+  ## Attach the IGW to the VPC.
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref Igw
+
+  ## Create a Route Table to replace the
+  ## default one that comes with the VPC.
+  ## Every Route Table automatically contains
+  ## a Route for local traffic (based on the
+  ## VPC's CIDR block), so no need to add that.
+  Rt:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value:
+            !Join
+              - '_'
+              - - !Ref AWS::StackName
+                - Rt
+
+  ## Add a Route to the Route Table which takes
+  ## any "unmatched" non-local traffic and
+  ## directs it to the Internet Gateway.
+  RtIgw:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref Rt
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref Igw
+
+  ## Create a Subnet that can hold ~256 instances.
+  ## By default, these instances are completely
+  ## isolated from everything.  Also makes sure
+  ## that all instances have a public IPv4 address
+  ## so that they can potentially talk to the
+  ## internet without the need for an Elastic IP.
+  ## Each subnet will be placed in a different
+  ## availablility zone in the current region.
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone:
+        !Select
+          - 0
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value:
+            !Join
+              - '_'
+              - - !Ref AWS::StackName
+                - SubnetA
+
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone:
+        !Select
+          - 1
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value:
+            !Join
+              - '_'
+              - - !Ref AWS::StackName
+                - SubnetB
+
+  SubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone:
+        !Select
+          - 2
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value:
+            !Join
+              - '_'
+              - - !Ref AWS::StackName
+                - SubnetC
+
+  ## Associate SubnetA with our Route Table.
+  ## This will allow instances with public IPv4
+  ## addresses to talk to the internet via
+  ## the Route that points to the Internet Gateway
+  ## (if the instance Security Group allows it).
+  RtAssocA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref Rt
+      SubnetId: !Ref SubnetA
+
+  ## Same for SubnetB.
+  RtAssocB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref Rt
+      SubnetId: !Ref SubnetB
+
+  ## Same for SubnetC.
+  RtAssocC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref Rt
+      SubnetId: !Ref SubnetC
+
+  ## Create a Security Group that doesn't secure
+  ## a damn thing.  But instances using this
+  ## Security Group will be accessible via ssh, etc.
+  ## This doesn't really have anything to do with
+  ## anything VPC-related; it's just here temporarily
+  ## for convenience.
+  OpenSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        !Join
+          - '_'
+          - - !Ref AWS::StackName
+            - OpenSg
+      GroupDescription: "Wide open to the world so look out!"
+      VpcId: !Ref Vpc
+      SecurityGroupEgress:
+        - Description: "Allow all traffic to anywhere"
+          CidrIp: 0.0.0.0/0
+          FromPort: -1
+          ToPort: -1
+          IpProtocol: -1
+      SecurityGroupIngress:
+        - Description: "Allow all traffic from anywhere"
+          CidrIp: 0.0.0.0/0
+          FromPort: -1
+          ToPort: -1
+          IpProtocol: -1
+      Tags:
+        - Key: Name
+          Value:
+            !Join
+              - '_'
+              - - !Ref AWS::StackName
+                - OpenSg
+
+Outputs:
+
+  VpcOutput:
+    Description: 'The created VPC'
+    Value: !Ref Vpc
+    Export:
+      Name:
+        !Join
+          - '-'
+          - - !Ref AWS::StackName
+            - Vpc
+
+  SubnetAOutput:
+    Description: 'Subnet A'
+    Value: !Ref SubnetA
+    Export:
+      Name:
+        !Join
+          - '-'
+          - - !Ref AWS::StackName
+            - SubnetA
+
+  SubnetBOutput:
+    Description: 'Subnet B'
+    Value: !Ref SubnetB
+    Export:
+      Name:
+        !Join
+          - '-'
+          - - !Ref AWS::StackName
+            - SubnetB
+
+  SubnetCOutput:
+    Description: 'Subnet C'
+    Value: !Ref SubnetC
+    Export:
+      Name:
+        !Join
+          - '-'
+          - - !Ref AWS::StackName
+            - SubnetC
+
+  SecurityGroupOutput:
+    Description: 'The wide-open SecurityGroup'
+    Value: !Ref OpenSg
+    Export:
+      Name:
+        !Join
+          - '-'
+          - - !Ref AWS::StackName
+            - OpenSg
