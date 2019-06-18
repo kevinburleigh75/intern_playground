@@ -1,21 +1,103 @@
 AWSTemplateFormatVersion: 2010-09-09
-
+Parameters:
+  VpcStackName:
+    Type: String
+    Description: The name of the VPC stack on which to layer this template.
+  RoleStackName:
+    Type: String
+    Description: The name of the role stack which contains the Ec2InstanceRole.
+  ImageId:
+    Type: 'AWS::EC2::Image::Id'
+    Description: AMI to use in the LaunchConfiguration
+    ConstraintDescription: must be a valid AMI id
+  MinSize:
+    Type: Number
+    Description: The MinSize of Asg
+    ConstraintDescription: Must be >= 0
+  MaxSize:
+    Description: The MaxSize of Asg
+    Type: Number
+    ConstraintDescription: Must be >= MinSize
+  DesiredCapacity:
+    Description: The DesiredCapacity of Asg
+    Type: Number
+    ConstraintDescription: Must be between MinSize and MaxSize (inclusive)
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
 Resources:
-
-  LoadBalancerWLH:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-      Properties:
-        IpAddressType: String
-        LoadBalancerAttributes:
-          - LoadBalancerAttribute
-        Name: String
-        Scheme: String
-        SecurityGroups:
-          - String
-        SubnetMappings:
-          - SubnetMapping
-        Subnets:
-          - String
-        Tags:
-          - Tag
-        Type: String
+  ELB:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      IpAddressType: ipv4
+      Name: !Sub '${RoleStackName}-ELB'
+      Scheme: internet-facing
+      SecurityGroups:
+        - !ImportValue
+          'Fn::Sub': '${VpcStackName}-OpenSg'
+      Subnets:
+        # Kevin's role stack uses SubNet rather than Subnet
+        - !ImportValue
+          'Fn::Sub': '${VpcStackName}-SubnetA'
+        - !ImportValue
+          'Fn::Sub': '${VpcStackName}-SubnetB'
+        - !ImportValue
+          'Fn::Sub': '${VpcStackName}-SubnetC'
+      Type: "application"
+  Lc:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Properties:
+      AssociatePublicIpAddress: true
+      IamInstanceProfile: !ImportValue
+        'Fn::Sub': '${RoleStackName}-Ec2InstanceRoleInstanceProfileArn'
+      # We do not attach an iam role; this is a property of our RoleStack.
+      # We will need db permissions later, so we create our own role?
+      ImageId: !Ref ImageId
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      SecurityGroups:
+        - !ImportValue
+          'Fn::Sub': '${VpcStackName}-OpenSg'
+      UserData: !Base64
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash -xe
+            - |
+              touch /home/ec2-user/some_file.txt
+            - !Sub >
+              /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
+              Asg --region ${AWS::Region}
+  Asg:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      LaunchConfigurationName: !Ref Lc
+      Tags:
+        - Key: Name
+          Value: !Sub 'asg-instance-${AWS::StackName}'
+          PropagateAtLaunch: true
+      VPCZoneIdentifier:
+        - !ImportValue
+          'Fn::Sub': '${VpcStackName}-SubnetA'
+        - !ImportValue
+          'Fn::Sub': '${VpcStackName}-SubnetB'
+        - !ImportValue
+          'Fn::Sub': '${VpcStackName}-SubnetC'
+      DesiredCapacity: !Ref DesiredCapacity
+      MinSize: !Ref MinSize
+      MaxSize: !Ref MaxSize
+    CreationPolicy:
+      ResourceSignal:
+        Count: !Ref DesiredCapacity
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 3
+        MinInstancesInService: !Ref DesiredCapacity
+        MinSuccessfulInstancesPercent: 100
+        PauseTime: PT5M
+        SuspendProcesses:
+          - AZRebalance
+          - AlarmNotification
+          - ScheduledActions
+        WaitOnResourceSignals: true
