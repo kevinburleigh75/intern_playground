@@ -56,6 +56,7 @@ Resources:
       Protocol: HTTP
   ElbTarget:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    DependsOn: "Elb"
     Properties:
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
@@ -99,6 +100,7 @@ Resources:
               Asg --region ${AWS::Region}
   Asg:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: "ElbListener"
     Properties:
       LaunchConfigurationName: !Ref Lc
       Tags:
@@ -115,6 +117,8 @@ Resources:
       DesiredCapacity: !Ref DesiredCapacity
       MinSize: !Ref MinSize
       MaxSize: !Ref MaxSize
+      TargetGroupARNs:
+        - !Ref ElbTarget
     CreationPolicy:
       ResourceSignal:
         Count: !Ref DesiredCapacity
