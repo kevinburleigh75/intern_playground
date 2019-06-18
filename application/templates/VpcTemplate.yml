@@ -70,10 +70,6 @@ Resources:
       ## same as passing AWS::Region.  See:
       ##   https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-getavailabilityzones.html
       AvailabilityZone: !Select [0, !GetAZs '']
-        # !Select
-        #   - 0
-        #   - Fn::GetAZs:
-        #       !Ref AWS::Region
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
