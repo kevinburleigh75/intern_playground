@@ -66,11 +66,14 @@ Resources:
     Properties:
       VpcId: !Ref Vpc
       CidrBlock: 10.0.1.0/24
-      AvailabilityZone:
-        !Select
-          - 0
-          - Fn::GetAZs:
-              !Ref AWS::Region
+      ## Passing an empty string to !GetAZs is the
+      ## same as passing AWS::Region.  See:
+      ##   https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-getavailabilityzones.html
+      AvailabilityZone: !Select [0, !GetAZs '']
+        # !Select
+        #   - 0
+        #   - Fn::GetAZs:
+        #       !Ref AWS::Region
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -81,11 +84,7 @@ Resources:
     Properties:
       VpcId: !Ref Vpc
       CidrBlock: 10.0.2.0/24
-      AvailabilityZone:
-        !Select
-          - 1
-          - Fn::GetAZs:
-              !Ref AWS::Region
+      AvailabilityZone: !Select [1, !GetAZs '']
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -96,11 +95,7 @@ Resources:
     Properties:
       VpcId: !Ref Vpc
       CidrBlock: 10.0.3.0/24
-      AvailabilityZone:
-        !Select
-          - 2
-          - Fn::GetAZs:
-              !Ref AWS::Region
+      AvailabilityZone: !Select [2, !GetAZs '']
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
