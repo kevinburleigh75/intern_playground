@@ -70,6 +70,4 @@ RSpec.describe Benchmarker, type: :model do
     db = Benchmarker.new
     expect{db.ping_looper("httppps://www.gooooogle.com",10, 2)}.to change{Benchmarker.count}.by(10)
   end
-
-
 end
