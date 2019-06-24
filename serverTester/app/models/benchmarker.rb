@@ -1,9 +1,9 @@
 class Benchmarker < ApplicationRecord
 
-  def ping_looper(url,count)
+  def ping_looper(url,count, timeout)
     x = 0
     until x == count do
-      response = Pinger.new.measure_request(url)
+      response = Pinger.new.measure_request(url, timeout)
       Benchmarker.create!(:uuid => response[0],
                           :request_time => response[1],
                           :success => response[2],
