@@ -15,9 +15,9 @@ class Pinger
 
   #Handle exceptions so code doesn't break on bad inputs
   rescue HTTParty::Error => msg
-    return [SecureRandom.uuid, request_time, false, -2, request_time, msg.to_s]
+    return [SecureRandom.uuid, request_time, false, nil, nil, msg.to_s]
   rescue StandardError => msg
-    return [SecureRandom.uuid, request_time, false, -1, request_time, msg.to_s]
+    return [SecureRandom.uuid, request_time, false, nil, nil, msg.to_s]
 
 
   else
