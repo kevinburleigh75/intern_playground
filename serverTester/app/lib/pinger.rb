@@ -15,15 +15,30 @@ class Pinger
 
   #Handle exceptions so code doesn't break on bad inputs
   rescue HTTParty::Error => msg
-    return [SecureRandom.uuid, request_time, false, nil, nil, msg.to_s]
+    return {uuid: SecureRandom.uuid,
+            request_time: request_time,
+            success: false,
+            status: nil,
+            elapsed_time: nil,
+            error_msg: msg.to_s}
   rescue StandardError => msg
-    return [SecureRandom.uuid, request_time, false, nil, nil, msg.to_s]
+    return {uuid: SecureRandom.uuid,
+            request_time: request_time,
+            success: false,
+            status: nil,
+            elapsed_time: nil,
+            error_msg: msg.to_s}
 
 
   else
     stat = response.code
     conn = response.success?
-    [SecureRandom.uuid, request_time, conn, stat, elapsed_time, "client ok"]
+    {uuid: SecureRandom.uuid,
+     request_time: request_time,
+     success: conn,
+     status: stat,
+     elapsed_time: elapsed_time,
+     error_msg: "client ok"}
   end
 
 end

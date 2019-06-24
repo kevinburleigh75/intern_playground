@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_06_21_220632) do
+ActiveRecord::Schema.define(version: 2019_06_18_190904) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,7 +20,7 @@ ActiveRecord::Schema.define(version: 2019_06_21_220632) do
     t.datetime "request_time"
     t.boolean "success"
     t.integer "status"
-    t.time "elapsed"
+    t.float "elapsed"
     t.string "error_msg"
   end
 
