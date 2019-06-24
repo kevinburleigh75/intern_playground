@@ -6,8 +6,6 @@ class CreateBenchmarkers < ActiveRecord::Migration[6.0]
       t.boolean :success
       t.integer :status
       t.time :elapsed
-
-      t.timestamps
     end
   end
 end
