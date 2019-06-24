@@ -1,0 +1,18 @@
+[Unit]
+Description=Kevin's Ping Service
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/etc/systemd/system
+ExecStart=/bin/bash /etc/systemd/system/run_ping_server.sh
+KillSignal=SIGINT
+Restart=always
+RestartSec=90
+StartLimitInterval=400
+StartLimitBurst=3
+
+[Install]
+WantedBy=multi-user.target
+
