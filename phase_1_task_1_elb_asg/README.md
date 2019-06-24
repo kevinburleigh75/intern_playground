@@ -18,7 +18,7 @@ Phase One: Set up an ASG with an ELB, attach it to Route53 and a database in an 
      - Using aws linux 2 (image1 is aws linux 1) as linux 1 does not have systemd support
      - Of key note; cannot simply copy service over, make sure user is correct (ec2-user vs ubuntu)
         - The failure of the service will not even show up in the log
-~~Step Three: Cleanup~~
- - Fix template formatting
+Step Three: Cleanup
+ - ~~Fix template formatting~~
  - Convert from launch configuration to template
- - Change exports for the ability to create two stacks at the same time
+ - ~~Change exports for the ability to create two stacks at the same time~~

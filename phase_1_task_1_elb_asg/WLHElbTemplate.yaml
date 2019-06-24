@@ -31,19 +31,19 @@ Resources:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
       IpAddressType: ipv4
-      Name: !Sub '${RoleStackName}-ELB'
+      Name: !Sub '${AWS::StackName}-ELB'
       Scheme: internet-facing
       SecurityGroups:
         - !ImportValue
-          'Fn::Sub': '${VpcStackName}-OpenSg'
+          Fn::Sub: '${VpcStackName}-OpenSg'
       Subnets:
         # Kevin's role stack uses SubNet rather than Subnet
         - !ImportValue
-          'Fn::Sub': '${VpcStackName}-SubnetA'
+          Fn::Sub: '${VpcStackName}-SubnetA'
         - !ImportValue
-          'Fn::Sub': '${VpcStackName}-SubnetB'
+          Fn::Sub: '${VpcStackName}-SubnetB'
         - !ImportValue
-          'Fn::Sub': '${VpcStackName}-SubnetC'
+          Fn::Sub: '${VpcStackName}-SubnetC'
       Type: "application"
   ElbListener:
     Type: 'AWS::ElasticLoadBalancingV2::Listener'
@@ -52,11 +52,11 @@ Resources:
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref ElbTarget
-      Port: '3000'
+      Port: 3000
       Protocol: HTTP
   ElbTarget:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
-    DependsOn: "Elb"
+    DependsOn: Elb
     Properties:
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
@@ -73,21 +73,19 @@ Resources:
       Port: 3000
       Protocol: HTTP
       VpcId: !ImportValue
-        'Fn::Sub': '${VpcStackName}-Vpc'
+        Fn::Sub: '${VpcStackName}-Vpc'
   Lc:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
       AssociatePublicIpAddress: true
       IamInstanceProfile: !ImportValue
-        'Fn::Sub': '${RoleStackName}-Ec2InstanceRoleInstanceProfileArn'
-      # We do not attach an iam role; this is a property of our RoleStack.
-      # We will need db permissions later, so we create our own role?
+        Fn::Sub: '${RoleStackName}-Ec2InstanceRoleInstanceProfileArn'
       ImageId: !Ref ImageId
       InstanceType: t2.micro
       KeyName: !Ref KeyName
       SecurityGroups:
         - !ImportValue
-          'Fn::Sub': '${VpcStackName}-OpenSg'
+          Fn::Sub: '${VpcStackName}-OpenSg'
       UserData: !Base64
         'Fn::Join':
           - ''
@@ -109,11 +107,11 @@ Resources:
           PropagateAtLaunch: true
       VPCZoneIdentifier:
         - !ImportValue
-          'Fn::Sub': '${VpcStackName}-SubnetA'
+          Fn::Sub: '${VpcStackName}-SubnetA'
         - !ImportValue
-          'Fn::Sub': '${VpcStackName}-SubnetB'
+          Fn::Sub: '${VpcStackName}-SubnetB'
         - !ImportValue
-          'Fn::Sub': '${VpcStackName}-SubnetC'
+          Fn::Sub: '${VpcStackName}-SubnetC'
       DesiredCapacity: !Ref DesiredCapacity
       MinSize: !Ref MinSize
       MaxSize: !Ref MaxSize
