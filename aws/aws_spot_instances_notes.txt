@@ -1,0 +1,8 @@
+ASG template using Launch Templates (https://amzn.to/2Rmkwez)
+	⁃	Create suitable launch template
+	⁃	Do not specify use of Spot Instances in Launch Template
+	⁃	Create autoscaling group using launch template
+	⁃	Under Combine purchase models and instances, choose at least 2 instance types and choose settings for maximum Spot instance price, spot allocation, and on-demand percentage
+	⁃	Optionally add scaling policies
+	⁃	Once launched, Lifecycle column shows spot vs normal
+	⁃	Can adjust on-demand percentage and desired capacities and observe scaling out

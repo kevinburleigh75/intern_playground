@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: A basic CloudFormation template for an RDS Aurora PostgreSQL cluster built on top of InternVpc
+Parameters:
+  DatabaseInstanceType:
+    AllowedValues:
+      - db.r4.large
+    Description: The instance type to use for the database.
+    Type: String
+  DatabasePassword:
+    AllowedPattern: "[a-zA-Z0-9]+"
+    ConstraintDescription: must contain only alphanumeric characters.
+    Description: The database admin account password.
+    MaxLength: '41'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+  DatabaseUsername: 
+    AllowedPattern: "[a-zA-Z0-9]+"
+    ConstraintDescription: must contain only alphanumeric characters.
+    Description: The database admin account user name.
+    MaxLength: '16'
+    MinLength: '1'
+    Type: String
+  DatabaseClusterParameterGroupName:
+    Type: String
+    Default: "default.aurora-postgresql9.6"
+  DatabaseBackupRetentionPeriod:
+    Type: String
+    Default: 35
+    Description: The database retention period in days.
+  VpcStackName:
+    Type: String
+    Description: The name of the VPC stack on which to layer this template.
+  DatabaseSecurityGroups:
+    Default: sg-0260df097e7ad2f31
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: Security groups to apply to the RDS cluster.
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: default.aurora-postgresql9.6
+        Parameters:
+        - VpcStackName
+        - DatabaseInstanceType
+        - DatabaseName
+        - DatabaseUsername
+        - DatabasePassword
+        - DatabaseSubnets
+        - DatabaseSecurityGroups
+        - DatabaseBackupRetentionPeriod
+        - DatabaseClusterParameterGroupName
+    ParameterLabels:
+      VpcStackName:
+        default: Vpc Stack Name
+      DatabaseInstanceType:
+        default: Database Instance Type
+      DatabaseClusterParameterGroupName:
+        default: Database Cluster Parameter Group
+      DatabasePassword:
+        default: Database Password
+      DatabaseUsername:
+        default: Database Username
+      DatabaseBackupRetentionPeriod:
+        default: Database Backup Retention Period
+      DatabaseSecurityGroups:
+        default: Database Security Groups
+Resources: 
+  DatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: CloudFormation managed DB subnet group.
+      SubnetIds:
+        - Fn::ImportValue:
+            !Join
+              - '-'
+              - - !Ref VpcStackName
+                - SubnetA
+        - Fn::ImportValue:
+            !Join
+              - '-'
+              - - !Ref VpcStackName
+                - SubnetB
+        - Fn::ImportValue:
+            !Join
+              - '-'
+              - - !Ref VpcStackName
+                - SubnetC
+  DatabaseCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      MasterUsername:
+        Ref: DatabaseUsername
+      MasterUserPassword:
+        Ref: DatabasePassword
+      BackupRetentionPeriod:
+        Ref: DatabaseBackupRetentionPeriod
+      DBClusterParameterGroupName:
+        Ref: DatabaseClusterParameterGroupName
+      PreferredBackupWindow: 02:00-03:00
+      PreferredMaintenanceWindow: mon:03:00-mon:04:00
+      DBSubnetGroupName:
+        Ref: DatabaseSubnetGroup
+      VpcSecurityGroupIds:
+        Ref: DatabaseSecurityGroups
+  DatabasePrimaryInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: aurora-postgresql
+      DBClusterIdentifier:
+        Ref: DatabaseCluster
+      DBInstanceClass:
+        Ref: DatabaseInstanceType
+      DBSubnetGroupName:
+        Ref: DatabaseSubnetGroup
+
+
