@@ -1,24 +1,15 @@
 # README
+Ruby version: 2.6.0
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Up and running:
+* Routes for /hello and /ping
+* Get (ping) and post (hello) API specs
+* request_records migration
+* hello_service service and spec
 
-Things you may want to cover:
+Run tests with: bundle exec rspec ./.../spec.rb
 
-* Ruby version
+To do:
+* Implement around-action
+* JSON schema verification
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
