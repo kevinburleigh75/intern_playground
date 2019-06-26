@@ -1,19 +1,20 @@
-require 'json-schema'
+# require 'json-schema'
 
 class RequestHandler
 
   #json_schema =  'http://json-schema.org/draft-07/schema#'
 
-  def record_request(request:) # request is in the form {uuid: }
+  def record_request(req) # request is in the form {uuid: }
       start = Time.now
 
-      yield
+      # yield
 
       elapsed = Time.now - start
 
       test_instance_id = "i-01f61e42a73670c18"
       test_image_id = "ami-5fb8c835"
 
+      debugger
       request_record = RequestRecord.new(
           uuid: req[:uuid],
           instance_id: test_instance_id,

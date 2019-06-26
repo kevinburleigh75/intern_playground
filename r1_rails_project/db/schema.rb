@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(version: 2019_06_19_172950) do
     t.string "uuid", null: false
     t.string "instance_id", null: false
     t.string "image_id", null: false
+    t.float "elapsed", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
