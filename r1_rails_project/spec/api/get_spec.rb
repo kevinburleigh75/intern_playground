@@ -27,7 +27,6 @@ RSpec.describe '/ping get request endpoint', type: :request do
     end
   end
 
-
 def create_request(request_payload:)
   make_get_request(
       route: '/ping',
