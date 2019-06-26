@@ -8,19 +8,20 @@ class RequestHandler
       start = Time.now
 
       # yield
+      # How do I use yield???
 
       elapsed = Time.now - start
 
       test_instance_id = "i-01f61e42a73670c18"
       test_image_id = "ami-5fb8c835"
 
-      debugger
       request_record = RequestRecord.new(
           uuid: req[:uuid],
           instance_id: test_instance_id,
           image_id: test_image_id,
           elapsed: elapsed
       )
+
       request_record.save!
     end
 
