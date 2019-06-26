@@ -5,9 +5,10 @@ require 'securerandom'
 require 'uri'
 
 RSpec.describe Benchmarker, type: :model do
+  pinger = Pinger.new
 
   it "returns a random uuid, request time, success, good status, elapsed time" do
-    stat_200 = Pinger.new.measure_request("https://httpstat.us/200", 2)
+    stat_200 = pinger.measure_request("https://httpstat.us/200", 2)
     expect(stat_200[:uuid]).to be_a(String)
     expect(stat_200[:request_time]).to be_a(Time)
     expect(stat_200[:success]).to eq(true)
@@ -16,7 +17,7 @@ RSpec.describe Benchmarker, type: :model do
   end
 
   it "returns a random uuid, request time, failure, bad status, elapsed time" do
-    stat_404 = Pinger.new.measure_request("https://httpstat.us/404", 2)
+    stat_404 = pinger.measure_request("https://httpstat.us/404", 2)
     expect(stat_404[:uuid]).to be_a(String)
     expect(stat_404[:request_time]).to be_a(Time)
     expect(stat_404[:success]).to eq(false)
@@ -25,11 +26,11 @@ RSpec.describe Benchmarker, type: :model do
   end
 
   it "doesn't break on bad uri links" do
-    expect{Pinger.new.measure_request("bad uri", 2)}.not_to raise_error
+    expect{pinger.measure_request("bad uri", 2)}.not_to raise_error
   end
 
   it "returns a random uuid, request time, failure, nil, nil on bad uri links" do
-    bad_uri = Pinger.new.measure_request("bad uri", 2)
+    bad_uri = pinger.measure_request("bad uri", 2)
     expect(bad_uri[:uuid]).to be_a(String)
     expect(bad_uri[:request_time]).to be_a(Time)
     expect(bad_uri[:success]).to eq(false)
@@ -38,11 +39,11 @@ RSpec.describe Benchmarker, type: :model do
   end
 
   it "doesn't break on non-http links" do
-    expect{Pinger.new.measure_request("htttttp://wwvv.not-http.com", 2)}.not_to raise_error
+    expect{pinger.measure_request("htttttp://wwvv.not-http.com", 2)}.not_to raise_error
   end
 
   it "returns a random uuid, request time, failure, nil, nil on non-http links" do
-    not_http = Pinger.new.measure_request("htttttp://wwvv.not-http.com", 2)
+    not_http = pinger.measure_request("htttttp://wwvv.not-http.com", 2)
     expect(not_http[:uuid]).to be_a(String)
     expect(not_http[:request_time]).to be_a(Time)
     expect(not_http[:success]).to eq(false)
@@ -51,12 +52,12 @@ RSpec.describe Benchmarker, type: :model do
   end
 
   it "connection timeout correctly ends request" do
-    expect(Pinger.new.measure_request("https://httpstat.us/200",2)[:success]).to eq(true)
-    expect(Pinger.new.measure_request("https://httpstat.us/200",0.02)[:success]).to eq(false)
+    expect(pinger.measure_request("https://httpstat.us/200",2)[:success]).to eq(true)
+    expect(pinger.measure_request("https://httpstat.us/200",0.02)[:success]).to eq(false)
   end
 
   it "returns a random uuid, request time, failure, nil, nil on connection timeout" do
-    conn_timeout = Pinger.new.measure_request("https://httpstat.us/200", 0.02)
+    conn_timeout = pinger.measure_request("https://httpstat.us/200", 0.02)
     expect(conn_timeout[:uuid]).to be_a(String)
     expect(conn_timeout[:request_time]).to be_a(Time)
     expect(conn_timeout[:success]).to eq(false)
@@ -65,7 +66,7 @@ RSpec.describe Benchmarker, type: :model do
   end
 
   it "returns a random uuid, request time, failure, nil, nil on invalid http links" do
-    invaild_http = Pinger.new.measure_request("http://www.invalid.cooom", 0.02)
+    invaild_http = pinger.measure_request("http://www.invalid.cooom", 0.02)
     expect(invaild_http[:uuid]).to be_a(String)
     expect(invaild_http[:request_time]).to be_a(Time)
     expect(invaild_http[:success]).to eq(false)
@@ -74,12 +75,11 @@ RSpec.describe Benchmarker, type: :model do
   end
 
   it "creates the correct number of new entries" do
-    expect{Pinger.new.ping_looper("https://www.google.com",1, 2)}.to change{Benchmarker.count}.by(1)
-    expect{Pinger.new.ping_looper("https://www.google.com",10, 2)}.to change{Benchmarker.count}.by(10)
+    expect{pinger.ping_looper("https://www.google.com",1, 2)}.to change{Benchmarker.count}.by(1)
+    expect{pinger.ping_looper("https://www.google.com",10, 2)}.to change{Benchmarker.count}.by(10)
   end
 
   it "does things correctly" do
-    pinger = Pinger.new
     pinger.ping_looper("https://www.google.com",1, 2)
     pinger.ping_looper("https://httpstat.us/200",1, 2)
     pinger.ping_looper("https://httpstat.us/404",1, 2)
