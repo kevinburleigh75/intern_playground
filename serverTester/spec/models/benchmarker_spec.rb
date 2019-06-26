@@ -6,87 +6,90 @@ require 'uri'
 
 RSpec.describe Benchmarker, type: :model do
 
-  let!(:bm) { Benchmarker.create!(uuid: SecureRandom.uuid,
-                                  request_time: Time.now.utc,
-                                  success: true,
-                                  status: 200,
-                                  elapsed: Time.now,
-                                  error_msg: response[5]) }
-  let!(:updated_after_time) { sleep 0.1; Time.now.utc }
-
-  it "records a random uuid, request time, success, good status, elapsed time, and client ok" do
-    puts Pinger.new.measure_request("https://httpstat.us/200", 2).join(", ")
+  it "returns a random uuid, request time, success, good status, elapsed time" do
+    stat_200 = Pinger.new.measure_request("https://httpstat.us/200", 2)
+    expect(stat_200[:uuid]).to be_a(String)
+    expect(stat_200[:request_time]).to be_a(Time)
+    expect(stat_200[:success]).to eq(true)
+    expect(stat_200[:status]).to eq(200)
+    expect(stat_200[:elapsed]).to be_a(Float)
   end
 
-  it "records a random uuid, request time, failure, bad status, elapsed time, and client ok " do
-    puts Pinger.new.measure_request("https://httpstat.us/404", 2).join(", ")
+  it "returns a random uuid, request time, failure, bad status, elapsed time" do
+    stat_404 = Pinger.new.measure_request("https://httpstat.us/404", 2)
+    expect(stat_404[:uuid]).to be_a(String)
+    expect(stat_404[:request_time]).to be_a(Time)
+    expect(stat_404[:success]).to eq(false)
+    expect(stat_404[:status]).to eq(404)
+    expect(stat_404[:elapsed]).to be_a(Float)
   end
 
   it "doesn't break on bad uri links" do
     expect{Pinger.new.measure_request("bad uri", 2)}.not_to raise_error
   end
 
-  it "records a random uuid, request time, failure, nil, nil, and error message on bad uri links" do
-    puts Pinger.new.measure_request("bad uri", 2).join(", ")
+  it "returns a random uuid, request time, failure, nil, nil on bad uri links" do
+    bad_uri = Pinger.new.measure_request("bad uri", 2)
+    expect(bad_uri[:uuid]).to be_a(String)
+    expect(bad_uri[:request_time]).to be_a(Time)
+    expect(bad_uri[:success]).to eq(false)
+    expect(bad_uri[:status]).to eq(nil)
+    expect(bad_uri[:elapsed]).to eq(nil)
   end
 
   it "doesn't break on non-http links" do
     expect{Pinger.new.measure_request("htttttp://wwvv.not-http.com", 2)}.not_to raise_error
   end
 
-  it "records a random uuid, request time, failure, nil, nil, and error message on non-http links" do
-    puts Pinger.new.measure_request("htttttp://wwvv.not-http.com",2).join(", ")
+  it "returns a random uuid, request time, failure, nil, nil on non-http links" do
+    not_http = Pinger.new.measure_request("htttttp://wwvv.not-http.com", 2)
+    expect(not_http[:uuid]).to be_a(String)
+    expect(not_http[:request_time]).to be_a(Time)
+    expect(not_http[:success]).to eq(false)
+    expect(not_http[:status]).to eq(nil)
+    expect(not_http[:elapsed]).to eq(nil)
   end
 
   it "connection timeout correctly ends request" do
-    expect(Pinger.new.measure_request("https://www.google.com",2)[2]).to eq(true)
-    expect(Pinger.new.measure_request("https://www.google.com",0.02)[2]).to eq(false)
+    expect(Pinger.new.measure_request("https://httpstat.us/200",2)[:success]).to eq(true)
+    expect(Pinger.new.measure_request("https://httpstat.us/200",0.02)[:success]).to eq(false)
   end
 
-  it "records a random uuid, request time, failure, nil, nil, and error message on connection timeout" do
-    puts Pinger.new.measure_request("https://www.google.com",0.02).join(", ")
+  it "returns a random uuid, request time, failure, nil, nil on connection timeout" do
+    conn_timeout = Pinger.new.measure_request("https://httpstat.us/200", 0.02)
+    expect(conn_timeout[:uuid]).to be_a(String)
+    expect(conn_timeout[:request_time]).to be_a(Time)
+    expect(conn_timeout[:success]).to eq(false)
+    expect(conn_timeout[:status]).to eq(nil)
+    expect(conn_timeout[:elapsed]).to eq(nil)
   end
 
-  it "records a random uuid, request time, failure, nil, nil, and error message on invalid http links" do
-    puts Pinger.new.measure_request("http://www.invalid.cooom", 2).join(", ")
+  it "returns a random uuid, request time, failure, nil, nil on invalid http links" do
+    invaild_http = Pinger.new.measure_request("http://www.invalid.cooom", 0.02)
+    expect(invaild_http[:uuid]).to be_a(String)
+    expect(invaild_http[:request_time]).to be_a(Time)
+    expect(invaild_http[:success]).to eq(false)
+    expect(invaild_http[:status]).to eq(nil)
+    expect(invaild_http[:elapsed]).to eq(nil)
   end
 
-  it "works on valid links" do
-    data = Pinger.new.measure_request("https://www.google.com",2)
-    expect(data[2]).to eq(true)
-    expect(data[3]).to eq(200)
-  end
-
-  it "records the correct server status" do
-    expect(Pinger.new.measure_request("https://httpstat.us/200", 2)[3]).to eq(200)
-    expect(Pinger.new.measure_request("https://httpstat.us/404", 2)[3]).to eq(404)
-    expect(Pinger.new.measure_request("https://httpstat.us/501", 2)[3]).to eq(501)
-  end
-
-  it "correctly creates a new entry with valid link" do
-    expect{:bm.ping_looper("https://www.google.com",1, 2)}.to change{Benchmarker.count}.by(1)
-  end
-
-  it "correctly creates a new entry 10 times with valid link" do
-    expect{:bm.ping_looper("https://www.google.com",10, 2)}.to change{Benchmarker.count}.by(10)
-  end
-
-  it "correctly creates a new entry with invalid link" do
-    bm = Benchmarker.new
-    expect{bm.ping_looper("httppps://www.gooooogle.com",1, 2)}.to change{Benchmarker.count}.by(1)
-  end
-
-  it "correctly creates a new entry 10 times with invalid link" do
-    bm = Benchmarker.new
-    expect{bm.ping_looper("httppps://www.gooooogle.com",10, 2)}.to change{Benchmarker.count}.by(10)
+  it "creates the correct number of new entries" do
+    expect{Pinger.new.ping_looper("https://www.google.com",1, 2)}.to change{Benchmarker.count}.by(1)
+    expect{Pinger.new.ping_looper("https://www.google.com",10, 2)}.to change{Benchmarker.count}.by(10)
   end
 
   it "does things correctly" do
-    hello = Benchmarker.new
-    hello.ping_looper("https://www.google.com",10, 2)
+    pinger = Pinger.new
+    pinger.ping_looper("https://www.google.com",1, 2)
+    pinger.ping_looper("https://httpstat.us/200",1, 2)
+    pinger.ping_looper("https://httpstat.us/404",1, 2)
+    pinger.ping_looper("bad uri",1, 2)
+    pinger.ping_looper("htttttp://wwvv.not-http.com",1, 2)
+    pinger.ping_looper("https://httpstat.us/200",1, 0.002)
 
-    puts hello.inspect
-    puts Benchmarker.count
+    for row in Benchmarker.all
+      puts row.inspect
+    end
   end
 
 end

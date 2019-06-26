@@ -16,12 +16,12 @@ ActiveRecord::Schema.define(version: 2019_06_18_190904) do
   enable_extension "plpgsql"
 
   create_table "benchmarkers", force: :cascade do |t|
-    t.uuid "uuid"
+    t.string "uuid"
     t.datetime "request_time"
+    t.string "endpoint"
     t.boolean "success"
     t.integer "status"
     t.float "elapsed"
-    t.string "error_msg"
   end
 
 end
