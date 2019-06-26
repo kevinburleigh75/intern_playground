@@ -74,33 +74,39 @@ Resources:
       Protocol: HTTP
       VpcId: !ImportValue
         Fn::Sub: '${VpcStackName}-Vpc'
-  Lc:
-    Type: 'AWS::AutoScaling::LaunchConfiguration'
+  Lt:
+    Type: AWS::EC2::LaunchTemplate
     Properties:
-      AssociatePublicIpAddress: true
-      IamInstanceProfile: !ImportValue
-        Fn::Sub: '${RoleStackName}-Ec2InstanceRoleInstanceProfileArn'
-      ImageId: !Ref ImageId
-      InstanceType: t2.micro
-      KeyName: !Ref KeyName
-      SecurityGroups:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn: !ImportValue
+            Fn::Sub: '${RoleStackName}-Ec2InstanceRoleInstanceProfileArn'
+        ImageId: !Ref ImageId
+        InstanceType: t2.micro
+        KeyName: !Ref KeyName
+        SecurityGroupIds:
         - !ImportValue
           Fn::Sub: '${VpcStackName}-OpenSg'
-      UserData: !Base64
-        'Fn::Join':
-          - ''
-          - - |
-              #!/bin/bash -xe
-            - |
-              touch /home/ec2-user/some_file.txt
-            - !Sub >
-              /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
-              Asg --region ${AWS::Region}
+        UserData: !Base64
+          Fn::Join:
+            - ''
+            - - |
+                #!/bin/bash -xe
+              - |
+                touch /home/ec2-user/some_file.txt
+              - !Sub >
+                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
+                Asg --region ${AWS::Region}
+      LaunchTemplateName: WLHTemplate
   Asg:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
-    DependsOn: "ElbListener"
+    DependsOn:
+      - "ElbListener"
+      - "Lt"
     Properties:
-      LaunchConfigurationName: !Ref Lc
+      LaunchTemplate:
+        LaunchTemplateId: !Ref "Lt"
+        Version: !GetAtt "Lt.LatestVersionNumber"
       Tags:
         - Key: Name
           Value: !Sub 'asg-instance-${AWS::StackName}'

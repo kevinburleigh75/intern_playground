@@ -20,5 +20,9 @@ Phase One: Set up an ASG with an ELB, attach it to Route53 and a database in an 
         - The failure of the service will not even show up in the log
 Step Three: Cleanup
  - ~~Fix template formatting~~
- - Convert from launch configuration to template
+ - ~~Convert from launch configuration to template~~
  - ~~Change exports for the ability to create two stacks at the same time~~
+ - (Own Task) Prepare rollout of updates based on template
+ - Fully document the fix for the startup thing on linux
+
+Step Four: Create app Stack
