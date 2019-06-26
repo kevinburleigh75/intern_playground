@@ -4,6 +4,7 @@ class CreateRequestRecords < ActiveRecord::Migration[5.2]
       t.string  :uuid,              null: false
       t.string  :instance_id,       null: false
       t.string  :image_id,          null: false
+      t.float   :elapsed,           null: false
 
       t.timestamps                  null: false
     end

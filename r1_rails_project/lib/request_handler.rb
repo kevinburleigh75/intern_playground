@@ -4,22 +4,21 @@ class RequestHandler
 
   #json_schema =  'http://json-schema.org/draft-07/schema#'
 
-  # rescue_from Errors::AppReqValError, with: :render_app_req_val_error
-  def record_request(request:)
+  def record_request(request:) # request is in the form {uuid: }
       start = Time.now
 
       yield
 
       elapsed = Time.now - start
 
-      instance_id = 'fake_instance_id'
-      image_id = 'fake_image_id'
+      test_instance_id = "i-01f61e42a73670c18"
+      test_image_id = "ami-5fb8c835"
 
       request_record = RequestRecord.new(
-          uuid: SecureRandom.uuid.to_s,
-          request_elapsed: elapsed,
-          instance_id: instance_id,
-          image_id: image_id,
+          uuid: req[:uuid],
+          instance_id: test_instance_id,
+          image_id: test_image_id,
+          elapsed: elapsed
       )
       request_record.save!
     end
