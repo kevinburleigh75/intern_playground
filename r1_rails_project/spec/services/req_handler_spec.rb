@@ -15,4 +15,16 @@ RSpec.describe RequestHandler, :truncation do
     end
   end
 
+  context 'when request_record is called twice with duplicate requests' do
+    let(:test_uuid) {
+      SecureRandom.uuid.to_s
+    }
+
+    it 'only one new RequestRecord is created' do
+      expect{RequestHandler.new.record_request({uuid: test_uuid})}.to change {RequestRecord.count}.by 1
+      expect{RequestHandler.new.record_request({uuid: test_uuid})}.to change {RequestRecord.count}.by 0
+      ## make spec pass by only allowing single entry for each request uuid ##
+    end
+  end
+
 end

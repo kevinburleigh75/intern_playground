@@ -8,7 +8,7 @@ RSpec.describe HelloService do
 
     it 'the uuid of the response matches the request uuid' do
       response = HelloService.new.process({uuid: test_uuid})
-      expect(response[:uuid]).to eq(test_uuid)
+      expect(response.fetch(:uuid)).to eq(test_uuid)
     end
   end
 end

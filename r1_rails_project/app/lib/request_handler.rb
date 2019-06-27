@@ -15,14 +15,17 @@ class RequestHandler
       test_instance_id = "i-01f61e42a73670c18"
       test_image_id = "ami-5fb8c835"
 
-      request_record = RequestRecord.new(
-          uuid: req[:uuid],
-          instance_id: test_instance_id,
-          image_id: test_image_id,
-          elapsed: elapsed
-      )
+      ActiveRecord::Base.transaction(isolation: :repeatable_read, requires_new: true) do
+        request_record = RequestRecord.new(
+            uuid: req[:uuid],
+            instance_id: test_instance_id,
+            image_id: test_image_id,
+            elapsed: elapsed
+        )
 
-      request_record.save!
+        request_record.save!
+      end
+
     end
 
 
