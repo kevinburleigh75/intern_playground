@@ -1,7 +1,7 @@
 require 'rails_helper'
 require 'securerandom'
 
-RSpec.describe '/hello post request endpoint', type: :request do
+RSpec.describe '/hello post request endpoint', type: :request, truncation: true do
   let(:service_instance_double) {
     instance_double(HelloService).tap do |dbl|
       allow(dbl).to receive(:process).with(given_request_payload).and_return(target_response_payload)

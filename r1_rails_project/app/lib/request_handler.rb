@@ -2,34 +2,28 @@ require 'rj_schema'
 
 class RequestHandler
 
+
   #json_schema =  'http://json-schema.org/draft-07/schema#'
 
-  def record_request(req) # request is in the form {uuid: }
+  def record_request(req, endpoint) # request is in the form {uuid: }
       start = Time.now
 
-      # yield
-      # How do I use yield???
+      yield
 
       elapsed = Time.now - start
-
-      test_instance_id = "i-01f61e42a73670c18"
-      test_image_id = "ami-5fb8c835"
 
       ActiveRecord::Base.transaction(isolation: :repeatable_read, requires_new: true) do
         request_record = RequestRecord.new(
             uuid: req[:uuid],
-            instance_id: test_instance_id,
-            image_id: test_image_id,
+            endpoint: endpoint,
             elapsed: elapsed
         )
-
         request_record.save!
       end
-
-    end
-
+  end
 
   def validate_json(json_payload:)
+    # RjSchema::Validator.new.validate()
 
   end
 
