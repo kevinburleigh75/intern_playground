@@ -1,4 +1,4 @@
-# require 'json-schema'
+require 'rj_schema'
 
 class RequestHandler
 

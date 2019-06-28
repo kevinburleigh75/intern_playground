@@ -42,6 +42,7 @@ group :development, :test do
   ## Custom Stuff ##
   gem 'rspec-rails'
   gem 'database_cleaner'
+  gem 'rj_schema'
 end
 
 group :development do
