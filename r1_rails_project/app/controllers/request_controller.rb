@@ -9,15 +9,14 @@ class RequestController < ApplicationController
   def create_post
     response_payload = HelloService.new.process(req)
     errors = JsonVerifier.new.validate_json(req)
-    render json: response_payload, status: 200
-    return errors
+    status = (errors == []) ? 200 : 400
+    render json: response_payload, status: status
   end
 
   def create_get
     response_payload = PingService.new.process(req)
     render json: response_payload, status: 200
   end
-
 
 
   def record_request # request is in the form {uuid: }
@@ -36,6 +35,5 @@ class RequestController < ApplicationController
       request_record.save!
     end
   end
-
 
 end

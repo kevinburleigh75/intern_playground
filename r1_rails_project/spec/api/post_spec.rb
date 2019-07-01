@@ -27,6 +27,10 @@ RSpec.describe '/hello post request endpoint', type: :request, truncation: true 
       {uuid: test_uuid}
     }
 
+    let(:bad_request_payload) {
+      {id: 123}
+    }
+
     let(:target_response_payload) {
       {uuid: test_uuid,
        instance_id: test_instance_id,

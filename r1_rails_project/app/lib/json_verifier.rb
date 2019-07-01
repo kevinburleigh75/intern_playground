@@ -4,6 +4,7 @@ class JsonVerifier
 
   def validate_json(json_payload)
     errors = RjSchema::Validator.new.validate(schema, json_payload)
+    # debugger
     return errors
   end
 

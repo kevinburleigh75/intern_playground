@@ -15,6 +15,4 @@ RSpec.describe 'json verifier', truncation: true do
       expect(errors).not_to eq([])
     end
   end
-
-
 end
