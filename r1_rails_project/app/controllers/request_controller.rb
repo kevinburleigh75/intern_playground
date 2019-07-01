@@ -8,9 +8,9 @@ class RequestController < ApplicationController
 
   def create_post
     response_payload = HelloService.new.process(req)
-    # JsonVerifier.new.validate_json(request)
+    errors = JsonVerifier.new.validate_json(req)
     render json: response_payload, status: 200
-
+    return errors
   end
 
   def create_get

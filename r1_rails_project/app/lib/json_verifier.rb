@@ -2,38 +2,34 @@ require 'rj_schema'
 
 class JsonVerifier
 
-
-  #json_schema =  'http://json-schema.org/draft-07/schema#'
-
-  def validate_json(json_payload:)
-    # RjSchema::Validator.new.validate()
-
+  def validate_json(json_payload)
+    errors = RjSchema::Validator.new.validate(schema, json_payload)
+    return errors
   end
 
-  ######################### Helpers ##############################
-
-  def with_json_apis(input_schema: nil, output_schema: nil, &block)
-
-  end
-
-  def validate_and_parse_request(input_schema)
-    return {} if input_schema.nil?
-
-    if request.content_type != 'application/json'
-      # fail Errors::AppReqValError('must have content-type application/json')
-    end
-
-
-  end
-
-  def render_app_req_val_error(exception)
-    request.body.rewind
-    request_body = request.body.read
-    payload = {
-        errors: exception.errors,
-        request: request_body
+  def schema
+    {
+        "definitions": {},
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "http://example.com/root.json",
+        "type": "object",
+        "title": "The Root Schema",
+        "required": [
+            "uuid"
+        ],
+        "properties": {
+            "uuid": {
+                "$id": "#/properties/uuid",
+                "type": "string",
+                "title": "The Uuid Schema",
+                "default": "",
+                "examples": [
+                    "c314de55-d7fa-49a3-9feb-ac8d0b27dbbd"
+                ],
+                "pattern": "^(.*)$"
+            }
+        }
     }
-    render json: payload, status: 400
   end
 
 end
