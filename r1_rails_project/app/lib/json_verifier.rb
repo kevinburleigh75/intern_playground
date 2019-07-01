@@ -1,6 +1,6 @@
 require 'rj_schema'
 
-class RequestHandler
+class JsonVerifier
 
 
   #json_schema =  'http://json-schema.org/draft-07/schema#'

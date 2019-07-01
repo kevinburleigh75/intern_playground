@@ -49,8 +49,18 @@ RSpec.describe '/hello post request endpoint', type: :request, truncation: true 
     end
 
     it 'one new RequestRecord is created' do
-      response_status, response_body = create_request(request_payload: given_request_payload)
+      create_request(request_payload: given_request_payload)
       expect(RequestRecord.count).to eq(1)
+    end
+
+    it 'the RequestRecord uuid matches the request uuid' do
+      create_request(request_payload: given_request_payload)
+      expect(RequestRecord.first[:uuid]).to eq(test_uuid)
+    end
+
+    it 'some time has elapsed in recording the request' do
+      create_request(request_payload: given_request_payload)
+      expect(RequestRecord.first[:elapsed]).not_to eq(0)
     end
   end
 end
