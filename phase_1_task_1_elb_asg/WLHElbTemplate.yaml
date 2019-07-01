@@ -74,9 +74,28 @@ Resources:
       Protocol: HTTP
       VpcId: !ImportValue
         Fn::Sub: '${VpcStackName}-Vpc'
+  ElbDns:
+    Type: 'AWS::Route53::RecordSetGroup'
+    Properties:
+      HostedZoneName: staxlearning.org.
+      RecordSets:
+        - Name: !Join
+            - ''
+            - - wlh.
+              - !Ref 'AWS::StackName'
+              - .staxlearning.org.
+          Type: A
+          AliasTarget:
+            HostedZoneId: !GetAtt
+              - Elb
+              - CanonicalHostedZoneID
+            DNSName: !GetAtt
+              - Elb
+              - DNSName
   Lt:
     Type: AWS::EC2::LaunchTemplate
     Properties:
+      LaunchTemplateName: !Sub '${AWS::StackName}-Template'
       LaunchTemplateData:
         IamInstanceProfile:
           Arn: !ImportValue
@@ -97,7 +116,6 @@ Resources:
               - !Sub >
                 /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
                 Asg --region ${AWS::Region}
-      LaunchTemplateName: WLHTemplate
   Asg:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn:

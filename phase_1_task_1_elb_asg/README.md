@@ -24,5 +24,5 @@ Step Three: Cleanup
  - ~~Change exports for the ability to create two stacks at the same time~~
  - (Own Task) Prepare rollout of updates based on template
  - Fully document the fix for the startup thing on linux
-
+ - ~~Attatch Route53~~
 Step Four: Create app Stack
