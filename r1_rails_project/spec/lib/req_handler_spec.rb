@@ -10,8 +10,6 @@ RSpec.describe RequestHandler, :truncation do
     }
 
     it 'one new RequestRecord is created' do
-      expect{RequestHandler.new.record_request({uuid: test_uuid}, '\hello')}.to change {RequestRecord.count}.by 1
-      expect(RequestRecord.count).to eq(1)
     end
   end
 

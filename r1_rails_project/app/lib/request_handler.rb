@@ -5,23 +5,6 @@ class RequestHandler
 
   #json_schema =  'http://json-schema.org/draft-07/schema#'
 
-  def record_request(req, endpoint) # request is in the form {uuid: }
-      start = Time.now
-
-      yield
-
-      elapsed = Time.now - start
-
-      ActiveRecord::Base.transaction(isolation: :repeatable_read, requires_new: true) do
-        request_record = RequestRecord.new(
-            uuid: req[:uuid],
-            endpoint: endpoint,
-            elapsed: elapsed
-        )
-        request_record.save!
-      end
-  end
-
   def validate_json(json_payload:)
     # RjSchema::Validator.new.validate()
 

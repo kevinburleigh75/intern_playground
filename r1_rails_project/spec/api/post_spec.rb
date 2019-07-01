@@ -47,6 +47,11 @@ RSpec.describe '/hello post request endpoint', type: :request, truncation: true 
       response_status, response_body = create_request(request_payload: given_request_payload)
       expect(response_status).to eq(200)
     end
+
+    it 'one new RequestRecord is created' do
+      response_status, response_body = create_request(request_payload: given_request_payload)
+      expect(RequestRecord.count).to eq(1)
+    end
   end
 end
 

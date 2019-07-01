@@ -2,8 +2,11 @@ class RequestController < ApplicationController
 
   around_action :record_request
 
+  def req
+    request.request_parameters.deep_symbolize_keys[:request]
+  end
+
   def create_post
-    req = request.request_parameters.deep_symbolize_keys[:request]
     response_payload = HelloService.new.process(req)
     # RequestHandler.new.validate_json(request)
     render json: response_payload, status: 200
@@ -11,7 +14,6 @@ class RequestController < ApplicationController
   end
 
   def create_get
-    req = request.request_parameters.deep_symbolize_keys[:request]
     response_payload = PingService.new.process(req)
     render json: response_payload, status: 200
   end
@@ -19,7 +21,6 @@ class RequestController < ApplicationController
 
 
   def record_request # request is in the form {uuid: }
-    req = request.request_parameters.deep_symbolize_keys[:request]
     start = Time.now
 
     yield
