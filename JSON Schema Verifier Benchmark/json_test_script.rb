@@ -46,7 +46,7 @@ File.open('json-schema-benchmark-comparison-official', 'w') do |line|
 
     bench3 = Benchmark.realtime do (
       N.times do
-        bool3 = RjSchema::Validator.new.valid?(schema,File.new(json_test)) ? true : false
+          bool3 = RjSchema::Validator.new.valid?(schema,File.new(json_test)) ? true : false
       end
     )
     end
