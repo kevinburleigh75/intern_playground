@@ -44,7 +44,7 @@ Resources:
           Fn::Sub: '${VpcStackName}-SubnetB'
         - !ImportValue
           Fn::Sub: '${VpcStackName}-SubnetC'
-      Type: "application"
+      Type: 'application'
   ElbListener:
     Type: 'AWS::ElasticLoadBalancingV2::Listener'
     Properties:
@@ -119,12 +119,12 @@ Resources:
   Asg:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn:
-      - "ElbListener"
-      - "Lt"
+      - 'ElbListener'
+      - 'Lt'
     Properties:
       LaunchTemplate:
-        LaunchTemplateId: !Ref "Lt"
-        Version: !GetAtt "Lt.LatestVersionNumber"
+        LaunchTemplateId: !Ref 'Lt'
+        Version: !GetAtt 'Lt.LatestVersionNumber'
       Tags:
         - Key: Name
           Value: !Sub 'asg-instance-${AWS::StackName}'
