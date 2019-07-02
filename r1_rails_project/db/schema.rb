@@ -19,9 +19,9 @@ ActiveRecord::Schema.define(version: 2019_06_19_172950) do
   end
 
   create_table "request_records", force: :cascade do |t|
-    t.string "uuid", null: false
-    t.string "endpoint", null: false
-    t.float "elapsed", null: false
+    t.string "uuid"
+    t.string "endpoint"
+    t.float "elapsed"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe '/ping get request endpoint', type: :request do
+RSpec.describe '/ping get request endpoint', type: :request, truncation: true do
   let(:service_instance_double) {
     instance_double(PingService).tap do |dbl|
       allow(dbl).to receive(:process).with({}).and_return({})
