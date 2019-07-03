@@ -1,6 +1,5 @@
 Phase One: Set up an ASG with an ELB, attach it to Route53 and a database in an app stack. Do so in a template.
 
-
 ~~Step One: Set up an auto-scaling group with an ELB.~~
  - One attaches an ASG to an ELB rather than the other way around
  - We are using application load balancers
@@ -10,6 +9,7 @@ Phase One: Set up an ASG with an ELB, attach it to Route53 and a database in an 
     - $ python -m SimpleHTTPServer 3000
   - Connected to server with curl, and by browser url with correct port to verify success
   - Tested proper deletion of ASG stack - successful.
+
 ~~Step Two: Get Automation Working~~
  - Attach said ELB to Route53 (nvm will fry entire system)
  - Get startup code running
@@ -18,11 +18,13 @@ Phase One: Set up an ASG with an ELB, attach it to Route53 and a database in an 
      - Using aws linux 2 (image1 is aws linux 1) as linux 1 does not have systemd support
      - Of key note; cannot simply copy service over, make sure user is correct (ec2-user vs ubuntu)
         - The failure of the service will not even show up in the log
-Step Three: Cleanup
+
+~~Step Three: Cleanup~~
  - ~~Fix template formatting~~
  - ~~Convert from launch configuration to template~~
  - ~~Change exports for the ability to create two stacks at the same time~~
- - (Own Task) Prepare rollout of updates based on template
- - Fully document the fix for the startup thing on linux
  - ~~Attatch Route53~~
-Step Four: Create app Stack
+
+~~Step Four: Create app Stack~~
+ - Make sure can ping ELB
+ - Successfully curled ping server from app stack
