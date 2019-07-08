@@ -30,6 +30,9 @@ RSpec.describe Requester do
       it 'a connection error' do
         expect(result.connection_error?).to be_truthy
       end
+      it 'an error' do
+        expect(result.error?).to be_truthy
+      end
     end
     context 'it does not report:' do
       it 'elapsed time' do
@@ -52,13 +55,16 @@ RSpec.describe Requester do
         it 'a timeout error' do
           expect(result.timeout_error?).to be_truthy
         end
+        it 'an error' do
+          expect(result.error?).to be_truthy
+        end
       end
       context 'it does not report:' do
         it 'elapsed time' do
           expect(result.elapsed_sec).to be_nil
         end
         it 'a connection error' do
-          expect(result.connection_error?).to be_falsy
+          expect(result.connection_error?).to be_falsey
         end
         it 'an HTTP response' do
           expect(result.http_response).to be_nil
@@ -76,10 +82,13 @@ RSpec.describe Requester do
       end
       context 'it does not report:' do
         it 'a connection error' do
-          expect(result.connection_error?).to be_falsy
+          expect(result.connection_error?).to be_falsey
         end
         it 'a timeout error' do
           expect(result.timeout_error?).to be_falsey
+        end
+        it 'an error' do
+          expect(result.error?).to be_falsey
         end
       end
     end

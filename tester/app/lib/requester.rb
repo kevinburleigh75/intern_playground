@@ -34,6 +34,10 @@ class Requester
       @http_response
     end
 
+    def error?
+      timeout_error? || connection_error?
+    end
+
     def timeout_error?
       @timeout_error
     end
