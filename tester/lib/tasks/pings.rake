@@ -20,7 +20,7 @@ namespace :pings do
             timeout_sec: timeout,
           )
 
-          msg = (result.connection_error? || result.timeout_error?) ? 'error' : 'success'
+          msg = result.error? ? 'error' : 'success'
           puts "#{Time.now.utc.iso8601(6)} thread #{thread_idx}: #{msg}"
           finish = Time.now
 

@@ -14,7 +14,7 @@ RSpec.describe 'parallel requesters' do
             timeout_sec: timeout_sec,
           )
 
-          if result.connection_error? || result.timeout_error?
+          if result.error?
             puts "thread #{thread_idx}: error"
           else
             puts "thread #{thread_idx}: success"
