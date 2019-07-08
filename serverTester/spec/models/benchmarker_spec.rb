@@ -81,4 +81,8 @@ RSpec.describe Benchmarker, type: :model do
       puts row.inspect
     end
   end
+
+  it "returns the correct uuid after a POST request" do
+
+  end
   end
