@@ -1,8 +1,4 @@
 require 'rails_helper'
-require 'time'
-require 'httparty'
-require 'securerandom'
-require 'uri'
 
 RSpec.describe Benchmarker, type: :model do
   pinger = Pinger.new

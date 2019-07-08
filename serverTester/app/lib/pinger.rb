@@ -1,4 +1,3 @@
-require 'time'
 require 'httparty'
 require 'securerandom'
 require 'uri'
@@ -59,8 +58,7 @@ class Pinger
   end
 
   def ping_looper(host, port, path, count, timeout)
-    x = 0
-    until x == count do
+    count.times do
       response = Pinger.new.measure_request(host, port, path, timeout)
       Benchmarker.create!(uuid: response[:uuid],
                           request_time: response[:request_time],
@@ -68,7 +66,6 @@ class Pinger
                           success: response[:success],
                           status: response[:status],
                           elapsed: response[:elapsed])
-      x += 1
     end
   end
 end
