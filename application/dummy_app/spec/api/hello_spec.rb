@@ -50,6 +50,11 @@ RSpec.describe '/hello endpoint', type: :request do
     xit 'returns a 4xx status'
     xit 'other?'
   end
+
+  context 'when the response payload is invalid' do
+    xit 'returns a 5xx status'
+    xit 'other?'
+  end
 end
 
 def hello_request(request_payload:)
@@ -66,5 +71,5 @@ def hello_request(request_payload:)
 end
 
 def make_post_request(route:, headers:, body: nil)
-  post route, params: body, headers:headers
+  post route, params: body, headers: headers
 end
