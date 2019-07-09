@@ -30,4 +30,20 @@ class ApplicationController < ActionController::Base
     end
   end
 
+
+  def record_request
+    start = Time.now.utc
+    yield
+    elapsed = Time.now.utc - start
+
+    ActiveRecord::Base.transaction(isolation: :read_committed, requires_new: true) do
+      RequestRecord.create!(
+        uuid:       SecureRandom.uuid,
+        endpoint:   request.fullpath,
+        start_time: start,
+        elapsed:    elapsed,
+        status:     response.status,
+      )
+    end
+  end
 end

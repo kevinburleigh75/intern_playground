@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe '/hello endpoint', type: :request do
+RSpec.describe '/hello endpoint', type: :request, truncation: true do
   let(:service_instance_double) {
     instance_double(HelloService).tap do |dbl|
       allow(dbl).to receive(:process).with(given_request_payload).and_return(target_response_payload)
@@ -44,6 +44,12 @@ RSpec.describe '/hello endpoint', type: :request do
       response_status, response_body = hello_request(request_payload: given_request_payload)
       expect(response_body).to eq(target_response_payload)
     end
+
+    it 'records information about the request to the database' do
+      expect {
+        hello_request(request_payload: given_request_payload)
+      }.to change{RequestRecord.count}.by(1)
+    end
   end
 
   context 'when the request payload is invalid' do
@@ -58,6 +64,12 @@ RSpec.describe '/hello endpoint', type: :request do
       response_status, response_body = hello_request(request_payload: given_request_payload)
       expect(response_body.fetch(:errors)).to_not be_empty
       # expect(response_body[:errors].select{|error| /uuid/.match(error.to_s)}).to_not be_empty
+    end
+
+    it 'records information about the request to the database' do
+      expect {
+        hello_request(request_payload: given_request_payload)
+      }.to change{RequestRecord.count}.by(1)
     end
   end
 
@@ -79,6 +91,12 @@ RSpec.describe '/hello endpoint', type: :request do
       response_status, response_body = hello_request(request_payload: given_request_payload)
       expect(response_body.fetch(:errors)).to_not be_empty
       # expect(response_body[:errors].select{|error| /uuid/.match(error.to_s)}).to_not be_empty
+    end
+
+    it 'records information about the request to the database' do
+      expect {
+        hello_request(request_payload: given_request_payload)
+      }.to change{RequestRecord.count}.by(1)
     end
   end
 end

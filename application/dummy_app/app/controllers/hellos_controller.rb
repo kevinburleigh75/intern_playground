@@ -1,4 +1,7 @@
 class HellosController < ApplicationController
+
+  around_action :record_request
+
   def hello
     with_validations(input_schema: hello_input_schema, output_schema: hello_output_schema) do
       response_body = HelloService.new.process(request.request_parameters.deep_symbolize_keys)
