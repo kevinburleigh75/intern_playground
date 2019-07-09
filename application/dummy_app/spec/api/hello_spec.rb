@@ -47,13 +47,39 @@ RSpec.describe '/hello endpoint', type: :request do
   end
 
   context 'when the request payload is invalid' do
-    xit 'returns a 4xx status'
-    xit 'other?'
+    let(:given_request_payload) { {} }
+
+    it 'the response status is 400 (client error)' do
+      response_status, response_body = hello_request(request_payload: given_request_payload)
+      expect(response_status).to eq(400)
+    end
+
+    it 'the response body describes the error' do
+      response_status, response_body = hello_request(request_payload: given_request_payload)
+      expect(response_body.fetch(:errors)).to_not be_empty
+      # expect(response_body[:errors].select{|error| /uuid/.match(error.to_s)}).to_not be_empty
+    end
   end
 
   context 'when the response payload is invalid' do
-    xit 'returns a 5xx status'
-    xit 'other?'
+    let(:target_response_payload) {
+      {
+        # uuid:        test_uuid,
+        instance_id: test_instance_id,
+        image_id:    test_image_id,
+      }
+    }
+
+    it 'the response status is 500 (internal server error)' do
+      response_status, response_body = hello_request(request_payload: given_request_payload)
+      expect(response_status).to eq(500)
+    end
+
+    it 'the response body describes the error' do
+      response_status, response_body = hello_request(request_payload: given_request_payload)
+      expect(response_body.fetch(:errors)).to_not be_empty
+      # expect(response_body[:errors].select{|error| /uuid/.match(error.to_s)}).to_not be_empty
+    end
   end
 end
 
