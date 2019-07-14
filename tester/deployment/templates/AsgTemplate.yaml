@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+
+  VpcStackName:
+    Type: String
+    Description: 'The name of the VPC stack on which to layer this template.'
+
+  RoleStackName:
+    Type: String
+    Description: 'The name of the role stack which contains the Ec2InstanceRole.'
+
+  ImageId:
+    Type: AWS::EC2::Image::Id
+    Description: 'AMI to use in the LaunchConfiguration'
+    ConstraintDescription: 'Must be a valid AMI id'
+
+  MinSize:
+    Type: Number
+    Description: 'The MinSize of Asg'
+    ConstraintDescription: Must be >= 0
+
+  MaxSize:
+    Description: 'The MaxSize of Asg'
+    Type: Number
+    ConstraintDescription: 'Must be >= MinSize'
+
+  DesiredCapacity:
+    Description: 'The DesiredCapacity of Asg'
+    Type: Number
+    ConstraintDescription: 'Must be between MinSize and MaxSize (inclusive)'
+
+  KeyName:
+    Description: 'Name of an existing EC2 KeyPair to enable SSH access to the instances.'
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: 'Must be the name of an existing EC2 KeyPair.'
+
+
+Resources:
+
+  Lt:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${AWS::StackName}-Lt'
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::ImportValue: !Sub '${RoleStackName}-Ec2InstanceRoleInstanceProfileArn'
+        ImageId: !Ref ImageId
+        InstanceType: t2.micro
+        KeyName: !Ref KeyName
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub '${VpcStackName}-OpenSg'
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash -xe
+            touch /home/ec2-user/user_data_start.txt
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource Asg --region ${AWS::Region}
+            touch /home/ec2-user/user_data_end.txt
+
+  Asg:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn:
+      - Lt
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref Lt
+        Version: !GetAtt Lt.LatestVersionNumber
+      Tags:
+        - Key: Name
+          Value: !Sub 'asg-instance-${AWS::StackName}'
+          PropagateAtLaunch: true
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub '${VpcStackName}-SubnetA'
+        - Fn::ImportValue: !Sub '${VpcStackName}-SubnetB'
+        - Fn::ImportValue: !Sub '${VpcStackName}-SubnetC'
+      DesiredCapacity: !Ref DesiredCapacity
+      MinSize: !Ref MinSize
+      MaxSize: !Ref MaxSize
+    CreationPolicy:
+      ResourceSignal:
+        Count: !Ref DesiredCapacity
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 3
+        MinInstancesInService: !Ref DesiredCapacity
+        MinSuccessfulInstancesPercent: 100
+        PauseTime: PT5M
+        SuspendProcesses:
+          - AZRebalance
+          - AlarmNotification
+          - ScheduledActions
+        WaitOnResourceSignals: true
