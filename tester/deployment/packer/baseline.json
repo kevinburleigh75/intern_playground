@@ -1,0 +1,30 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": ""
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-east-2",
+    "source_ami": "ami-0986c2ac728528ac2",
+    "instance_type": "t3a.small",
+    "ssh_username": "ubuntu",
+    "ssh_keypair_name": "kevin_kyumin_kp",
+    "ssh_private_key_file": "~/.ssh/kevin_kyumin_kp.pem",
+    "ami_name": "kevin packer-example {{timestamp}}"
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "scripts": [
+        "./baseline_install_deps.sh",
+        "./baseline_install_rbenv.sh",
+        "./baseline_install_ruby.sh",
+        "./baseline_install_rails.sh"
+      ],
+      "timeout": "20m"
+    }
+  ]
+}
