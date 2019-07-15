@@ -1,0 +1,66 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": ""
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-east-2",
+    "source_ami": "ami-0986c2ac728528ac2",
+    "instance_type": "t3a.small",
+    "ssh_username": "ubuntu",
+    "ssh_keypair_name": "kevin_kyumin_kp",
+    "ssh_private_key_file": "~/.ssh/kevin_kyumin_kp.pem",
+    "ami_name": "packer-example {{timestamp}}"
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo apt-get update",
+        "sudo apt-get update",
+        "DEBIAN_FRONTEND=noninteractive sudo apt-get -y install libssl-dev libreadline-dev zlib1g-dev",
+        "DEBIAN_FRONTEND=noninteractive sudo apt-get -y install build-essential",
+        "DEBIAN_FRONTEND=noninteractive sudo apt-get -y install postgresql postgresql-contrib libpq-dev",
+        "DEBIAN_FRONTEND=noninteractive sudo apt-get -y install nodejs"
+      ],
+      "timeout": "5m"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "git clone https://github.com/rbenv/rbenv.git ~/.rbenv",
+        "git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build",
+        "git clone git://github.com/jf/rbenv-gemset.git ~/.rbenv/plugins/rbenv-gemset",
+        "cd ~/.rbenv && src/configure && make -C src",
+        "cd",
+        "echo 'export PATH=\"$HOME/.rbenv/bin:$PATH\"' >> ~/.bash_profile",
+        "echo 'eval \"$(rbenv init -)\"' >> ~/.bash_profile",
+        "sed -i -e '1i. $HOME/.bash_profile\\' ~/.bashrc"
+      ],
+      "timeout": "1m"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "rbenv install 2.6.3"
+      ],
+      "timeout": "10m"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo -u postgres createuser -s ubuntu",
+        "git clone https://github.com/kevinburleigh75/intern_playground.git",
+        "cd intern_playground",
+        "git checkout klb_merge",
+        "cd tester/tester/",
+        "gem install bundler",
+        "bundle install"
+      ],
+      "timeout": "10m"
+    }
+  ]
+}
