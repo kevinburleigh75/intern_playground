@@ -8,9 +8,6 @@ git clone git://github.com/jf/rbenv-gemset.git ~/.rbenv/plugins/rbenv-gemset
 cd ~/.rbenv && src/configure && make -C src
 cd
 
-## Deail with interactive/non-interactive shell oddities
-## by adding rbenv setup to .bash_profile and making
-## sure .bashrc sources .bash_profile
+## Add rbenv setup to .bash_profile
 echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
 echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
-sed -i -e '1i. $HOME/.bash_profile\' ~/.bashrc
