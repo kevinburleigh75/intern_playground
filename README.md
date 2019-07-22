@@ -1,2 +1,3 @@
-# intern_playground
-Just a place to bring work together.
+# notes
+- Serverless cannot add instances
+- Cannot have replicas
