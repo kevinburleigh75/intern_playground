@@ -65,11 +65,13 @@ RSpec.describe ScalingLogic do
       it 'sets the target desired capacity to the correct number of workers'
     end
     context 'when the ideal desired capacity is greater than the ASG max' do
-      it 'sets the target desired capacity to the ASG max'
+      it 'sets the target desired capacity to the ASG max' do
+      expect(scaling.target_desired_capacity).to eq(asg_workers_max)
     end
   end
 
   context 'when the current capacity exceeds the projected demand' do
     ## TODO
   end
-end
+  end
+  end
