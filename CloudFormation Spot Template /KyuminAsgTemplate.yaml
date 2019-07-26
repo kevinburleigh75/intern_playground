@@ -1,13 +1,26 @@
 ﻿Description: A simple ASG + LaunchTemplate
 AWSTemplateFormatVersion: 2010-09-09
+
 Parameters:
   InstanceTypeParameter:
     Type: String
-    Default: t2.micro
+    Default: t3.micro
     AllowedValues:
+      - t2.nano
       - t2.micro
-      - t3.small
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
+      - t3.nano
       - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+
   MinSizeParameter:
     Type: Number
   MaxSizeParameter:
@@ -20,6 +33,7 @@ Parameters:
     Type: Number
 
 Resources:
+
   LaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
@@ -27,6 +41,7 @@ Resources:
       LaunchTemplateData:
         ImageId: ami-06ba88d1be185b5c2
         InstanceType: !Ref InstanceTypeParameter
+
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn: LaunchTemplate
@@ -44,8 +59,7 @@ Resources:
             LaunchTemplateName: KyuminSpotTemplate
             Version: '1'
           Overrides:
-            - InstanceType: 't2.micro'
-            - InstanceType: 't3.small'
+            - InstanceType: 't3.nano'
             - InstanceType: 't3.micro'
         InstancesDistribution:
           OnDemandBaseCapacity: !Ref OnDemandBaseCapacityParameter
