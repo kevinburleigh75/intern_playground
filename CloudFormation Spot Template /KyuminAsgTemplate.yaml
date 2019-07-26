@@ -1,0 +1,56 @@
+﻿Description: A simple ASG + LaunchTemplate
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  InstanceTypeParameter:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.small
+      - t3.micro
+  MinSizeParameter:
+    Type: Number
+  MaxSizeParameter:
+    Type: Number
+  DesiredCapacityParameter:
+    Type: Number
+  OnDemandBaseCapacityParameter:
+    Type: Number
+  OnDemandPercentageAboveBaseCapacityParameter:
+    Type: Number
+
+Resources:
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: KyuminSpotTemplate
+      LaunchTemplateData:
+        ImageId: ami-06ba88d1be185b5c2
+        InstanceType: !Ref InstanceTypeParameter
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: LaunchTemplate
+    Properties:
+      MinSize: !Ref MinSizeParameter
+      MaxSize: !Ref MaxSizeParameter
+      DesiredCapacity: !Ref DesiredCapacityParameter
+      VPCZoneIdentifier:
+        - subnet-2ae2da42
+        - subnet-80d108cc
+        - subnet-bfe89ec5
+      MixedInstancesPolicy:
+        LaunchTemplate:
+          LaunchTemplateSpecification:
+            LaunchTemplateName: KyuminSpotTemplate
+            Version: '1'
+          Overrides:
+            - InstanceType: 't2.micro'
+            - InstanceType: 't3.small'
+            - InstanceType: 't3.micro'
+        InstancesDistribution:
+          OnDemandBaseCapacity: !Ref OnDemandBaseCapacityParameter
+          OnDemandPercentageAboveBaseCapacity: !Ref OnDemandPercentageAboveBaseCapacityParameter
+
+
+
+
