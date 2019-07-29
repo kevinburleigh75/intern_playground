@@ -22,7 +22,7 @@ Parameters:
       - t3.2xlarge
   InstanceTypeParameter2:
     Type: String
-    Default: t3.nano
+    Default: t3.micro
     AllowedValues:
       - t2.nano
       - t2.micro
@@ -48,6 +48,8 @@ Parameters:
     Type: Number
   OnDemandPercentageAboveBaseCapacityParameter:
     Type: Number
+#  SpotMaxPriceParameter:
+#    Type: String
 
 Resources:
 
@@ -79,6 +81,7 @@ Resources:
         InstancesDistribution:
           OnDemandBaseCapacity: !Ref OnDemandBaseCapacityParameter
           OnDemandPercentageAboveBaseCapacity: !Ref OnDemandPercentageAboveBaseCapacityParameter
+#          SpotMaxPrice: !Ref SpotMaxPriceParameter
 
 
 
