@@ -2,9 +2,9 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
-  InstanceTypeParameter:
+  InstanceTypeParameter1:
     Type: String
-    Default: t3.micro
+    Default: t3.nano
     AllowedValues:
       - t2.nano
       - t2.micro
@@ -20,7 +20,24 @@ Parameters:
       - t3.large
       - t3.xlarge
       - t3.2xlarge
-
+  InstanceTypeParameter2:
+    Type: String
+    Default: t3.nano
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
+      - t3.nano
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
   MinSizeParameter:
     Type: Number
   MaxSizeParameter:
@@ -40,8 +57,6 @@ Resources:
       LaunchTemplateName: KyuminSpotTemplate
       LaunchTemplateData:
         ImageId: ami-06ba88d1be185b5c2
-        InstanceType: !Ref InstanceTypeParameter
-
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn: LaunchTemplate
@@ -59,8 +74,8 @@ Resources:
             LaunchTemplateName: KyuminSpotTemplate
             Version: '1'
           Overrides:
-            - InstanceType: 't3.nano'
-            - InstanceType: 't3.micro'
+            - InstanceType: !Ref InstanceTypeParameter1
+            - InstanceType: !Ref InstanceTypeParameter2
         InstancesDistribution:
           OnDemandBaseCapacity: !Ref OnDemandBaseCapacityParameter
           OnDemandPercentageAboveBaseCapacity: !Ref OnDemandPercentageAboveBaseCapacityParameter
