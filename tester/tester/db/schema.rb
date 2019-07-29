@@ -15,4 +15,10 @@ ActiveRecord::Schema.define(version: 0) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
+  # Create a table with three entries;
+  create_table "pinger_data" do |t|
+    t.integer "rate", null: false
+    t.integer "num_instances", null: false
+  end
+
 end

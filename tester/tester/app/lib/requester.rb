@@ -74,3 +74,87 @@ class Requester
     )
   end
 end
+
+class Driver
+  def initialize()
+    @desired_rate   = nil
+    @num_instances  = nil
+
+    self.get_pinger_data()
+  end
+
+  def desired_rate
+    @desired_rate
+  end
+
+  def num_instances
+    @num_instances
+  end
+
+  def get_pinger_data()
+    # Look in db and get url, desired rate, and number of instances.
+    pinger = PingerData.first
+
+    if pinger.nil?
+      raise "Database is empty!"
+    end
+
+    @desired_rate = pinger.rate
+    @num_instances = pinger.num_instances
+  end
+end
+
+class DriverChild
+  # Target_time in seconds
+  def initialize(lambda, target_amount, target_time)
+    @lambda = lambda
+    @target_amount = target_amount
+    @target_time = target_time
+
+    @target_interval = target_time.to_f / target_amount.to_f
+  end
+
+  # Run the lambda, and return the time in seconds.
+  def run_lambda_timed()
+    beginning_time = Time.now
+    @lambda.call()
+    end_time = Time.now
+    return (end_time - beginning_time).to_f
+  end
+
+  # Run lambda, targeting a certain total time in seconds
+  # If it takes more time than inputted, returns the
+  # "time debt"; the amount of time lost from target.
+  # If normal, returns 0.
+  def run_lambda_target_time(target_interval)
+    run_time = self.run_lambda_timed()
+
+    spare_time = target_interval - run_time
+
+    if spare_time >= 0
+      sleep(spare_time)
+      return 0
+    else
+      return -spare_time
+    end
+  end
+
+  # Run lambda for the appropriate interval.
+  def run_many(stop = False, num_iterations = 5)
+    cur_debt = 0
+
+    while true do
+      # Small adjustment to account for other operations; constant.
+      # Will drift over time.
+      cur_debt = run_lambda_target_time(@target_interval - cur_debt)
+      num_iterations -= 1
+
+      # This is where we could randomize the target_interval; +- to debt randomly.
+      if stop and num_iterations <= 0
+        break
+      end
+
+    end
+
+  end
+end

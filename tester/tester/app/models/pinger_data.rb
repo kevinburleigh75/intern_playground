@@ -1,0 +1,3 @@
+class PingerData < ApplicationRecord
+end
+
