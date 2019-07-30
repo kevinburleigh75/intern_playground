@@ -48,8 +48,8 @@ Parameters:
     Type: Number
   OnDemandPercentageAboveBaseCapacityParameter:
     Type: Number
-  SpotInstancePoolsParameter:
-    Type: Number
+#  SpotMaxPriceParameter:
+#    Type: String
 
 Resources:
 
@@ -58,7 +58,7 @@ Resources:
     Properties:
       LaunchTemplateName: KyuminSpotTemplate
       LaunchTemplateData:
-        ImageId: ami-06ba88d1be185b5c2
+        ImageId: ami-0267f6f8088f086fe
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn: LaunchTemplate
@@ -67,9 +67,8 @@ Resources:
       MaxSize: !Ref MaxSizeParameter
       DesiredCapacity: !Ref DesiredCapacityParameter
       VPCZoneIdentifier:
-        - subnet-2ae2da42
-        - subnet-80d108cc
-        - subnet-bfe89ec5
+        - subnet-61d3eb3a
+        - subnet-c86884ae
       MixedInstancesPolicy:
         LaunchTemplate:
           LaunchTemplateSpecification:
@@ -78,22 +77,10 @@ Resources:
           Overrides:
             - InstanceType: !Ref InstanceTypeParameter1
             - InstanceType: !Ref InstanceTypeParameter2
-            - InstanceType: t2.nano
-            - InstanceType: t2.micro
-            - InstanceType: t2.small
-            - InstanceType: t2.medium
-            - InstanceType: t2.large
-            - InstanceType: t2.xlarge
-            - InstanceType: t2.2xlarge
-            - InstanceType: t3.nano
-            - InstanceType: t3.micro
-            - InstanceType: t3.small
-            - InstanceType: t3.medium
-            - InstanceType: t3.large
         InstancesDistribution:
           OnDemandBaseCapacity: !Ref OnDemandBaseCapacityParameter
           OnDemandPercentageAboveBaseCapacity: !Ref OnDemandPercentageAboveBaseCapacityParameter
-          SpotInstancePools: !Ref SpotInstancePoolsParameter
+#          SpotMaxPrice: !Ref SpotMaxPriceParameter
 
 
 
