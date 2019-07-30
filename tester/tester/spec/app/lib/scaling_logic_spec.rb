@@ -13,6 +13,10 @@ class ScalingLogic
 
   def target_desired_capacity
   end
+
+  def threshold
+  end
+
 end
 
 ## R     = requests
@@ -53,13 +57,26 @@ RSpec.describe ScalingLogic do
 
   context 'when the current capacity falls short of the projected demand' do
     context 'due to the static margin being violated' do
-      it 'sets the target desired capacity to the correct number of workers'
+      it 'sets the target desired capacity above the threshold' do
+
+      end
     end
     context 'due to the projected growth exceeding the current capacity' do
-      it 'sets the target desired capacity to the correct number of workers'
+      context 'the projeted growth surpasses the current threshold' do
+        it 'sets the target capacity above the threshold' do
+
+        end
+      end
+      context 'the projected growth does not surpass the current threshold' do
+        it 'does not change the desired capacity' do
+
+        end
+      end
     end
     context 'due to a backlog of requests' do
-      it 'sets the target desired capacity to the correct number of workers'
+      it 'increases the target capacity to meet the backlog' do
+
+      end
     end
     context 'due to a combination of factors' do
       it 'sets the target desired capacity to the correct number of workers'
@@ -67,11 +84,13 @@ RSpec.describe ScalingLogic do
     context 'when the ideal desired capacity is greater than the ASG max' do
       it 'sets the target desired capacity to the ASG max' do
       expect(scaling.target_desired_capacity).to eq(asg_workers_max)
+      end
     end
   end
 
   context 'when the current capacity exceeds the projected demand' do
-    ## TODO
+    context 'when the '
+    context 'when the ideal desired capacity is less than the ASG max' do
+    end
   end
-  end
-  end
+end
