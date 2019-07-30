@@ -16,6 +16,7 @@ ActiveRecord::Schema.define(version: 0) do
   enable_extension "plpgsql"
 
   # Create a table with three entries;
+  # Rate is in requests/ minute
   create_table "pinger_data" do |t|
     t.integer "rate", null: false
     t.integer "num_instances", null: false

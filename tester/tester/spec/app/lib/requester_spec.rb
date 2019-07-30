@@ -96,16 +96,16 @@ RSpec.describe Requester do
 
 end
 
-RSpec.describe Driver do
-  let(:driver) {
-    Driver.new()
+RSpec.describe DriverData do
+  let(:driver_data) {
+    DriverData.new()
   }
 
   # Tests for request driver.
   context 'when driver is initalized but nothing in db' do
     it 'throws exception' do
       expect{
-        Driver.new()
+        DriverData.new()
       }.to raise_error("Database is empty!")
     end
   end
@@ -121,60 +121,76 @@ RSpec.describe Driver do
     end
 
     it 'populates fields from database' do
-      driver.get_pinger_data()
-      expect(driver.desired_rate).to be(5)
-      expect(driver.num_instances).to be(1)
+      data = driver_data.return_data()
 
+      expect(data["desired_rate"]).to eq(5)
+      expect(data["num_instances"]).to eq(1)
+
+    end
+
+    it 'updates when fields are updated' do
+      data = driver_data.return_data()
+
+      expect(data["desired_rate"]).to eq(5)
+      expect(data["num_instances"]).to eq(1)
+
+      pinger_data = PingerData.first
+      pinger_data.num_instances = 2
+      pinger_data.rate = 2
+      pinger_data.save()
+
+      driver_data.pull_data()
+      data = driver_data.return_data()
+
+      expect(data["desired_rate"]).to eq(2)
+      expect(data["num_instances"]).to eq(2)
     end
 
   end
 end
 
 RSpec.describe DriverChild do
-  let(:driver_child) {
-    lambda = -> { }
-    DriverChild.new(lambda, 5, 1)
+  before(:each) do
+    PingerData.create!(
+        rate: 5,
+        num_instances: 1
+    )
+  end
+
+  let(:driver_data) {
+    DriverData.new()
   }
 
-  context 'always' do
-    it 'can run the lambda' do
-      lambda = -> { puts "Example Lambda" }
-      driver_child.instance_variable_set(:@lambda, lambda)
+  let(:driver_child) {
+    lambda = -> { }
+    DriverChild.new(lambda, driver_data, 1, 1)
+  }
 
-      expect{
-        driver_child.run_lambda_timed()
-      }.to output('Example Lambda' + "\n").to_stdout
-    end
-
-    it 'has a float value for target_interval' do
+  context 'when driver_child is initiated with above param' do
+    it 'target_interval is 0.2' do
       expect(driver_child.instance_variable_get(:@target_interval)).is_a?(Float)
+      expect(driver_child.instance_variable_get(:@target_interval)).to eq(0.2)
     end
 
-    it 'times a lambda' do
-      expect(driver_child.run_lambda_timed()).is_a? (Integer)
-      expect(driver_child.run_lambda_timed() > 0)
+    it 'changes interval when pointer driver_data object is updated and wants to update' do
+
+      pinger_data = PingerData.first
+      expect(pinger_data.rate).to eq(5)
+      expect(pinger_data.num_instances).to eq(1)
+
+      expect(driver_child.instance_variable_get(:@target_interval)).to eq(0.2)
+
+      pinger_data.rate = 5
+      pinger_data.num_instances = 2
+      pinger_data.save()
+
+      driver_data.pull_data()
+
+      driver_child.get_driver_data()
+      expect(driver_child.instance_variable_get(:@target_interval)).to eq(0.4)
     end
   end
 
-  context 'when one iteration of lambda is tested' do
-    it 'returns the debt if there is debt' do
-      expect(driver_child.run_lambda_target_time(0.0)).to be > 0
-    end
-
-    it 'does not return debt if there is none' do
-      expect(driver_child.run_lambda_target_time(1.0)).to be == 0
-    end
-  end
-
-  context 'runs a cycle of lambda' do
-    it 'outputs to standard out five times' do
-      lambda = -> { puts "Example Lambda" }
-      driver_child.instance_variable_set(:@lambda, lambda)
-
-      expect{
-        driver_child.run_many(stop = true, num_iterations = 5)
-      }.to output(('Example Lambda' + "\n") * 5).to_stdout
-    end
 
     # 2.5 percent tolerance
     it 'takes about one seconds to to run everything' do
@@ -185,6 +201,4 @@ RSpec.describe DriverChild do
 
       expect(end_time - beginning_time).to be_an_between(0.975, 1.025)
     end
-
-  end
 end

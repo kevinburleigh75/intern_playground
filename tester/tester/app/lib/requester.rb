@@ -75,23 +75,13 @@ class Requester
   end
 end
 
-class Driver
+class DriverData
   def initialize()
-    @desired_rate   = nil
-    @num_instances  = nil
-
-    self.get_pinger_data()
+    @internal_dict = nil
+    self.pull_data()
   end
 
-  def desired_rate
-    @desired_rate
-  end
-
-  def num_instances
-    @num_instances
-  end
-
-  def get_pinger_data()
+  def pull_data()
     # Look in db and get url, desired rate, and number of instances.
     pinger = PingerData.first
 
@@ -99,44 +89,47 @@ class Driver
       raise "Database is empty!"
     end
 
-    @desired_rate = pinger.rate
-    @num_instances = pinger.num_instances
+    @internal_dict = {
+        "desired_rate" => pinger.rate,
+        "num_instances" =>pinger.num_instances
+    }
+    return @internal_dict
+  end
+
+  def return_data()
+    return @internal_dict
   end
 end
 
+class Driver
+  # Numthreads needs to be an os call with logic depending on the type of EC2 Instance
+  def initialize()
+
+  end
+
+end
+
+# Need to inline code to make considerations for parallelism.
 class DriverChild
   # Target_time in seconds
-  def initialize(lambda, target_amount, target_time)
+  def initialize(lambda, driver_data, num_threads, update_interval)
     @lambda = lambda
-    @target_amount = target_amount
-    @target_time = target_time
+    @num_threads = num_threads
+    @driver_data = driver_data
+    @target_interval = nil
+    @last_update = nil
 
-    @target_interval = target_time.to_f / target_amount.to_f
+    get_driver_data()
   end
 
-  # Run the lambda, and return the time in seconds.
-  def run_lambda_timed()
-    beginning_time = Time.now
-    @lambda.call()
-    end_time = Time.now
-    return (end_time - beginning_time).to_f
-  end
+  def get_driver_data()
+    data = @driver_data.return_data()
+    @last_update = Time.now
 
-  # Run lambda, targeting a certain total time in seconds
-  # If it takes more time than inputted, returns the
-  # "time debt"; the amount of time lost from target.
-  # If normal, returns 0.
-  def run_lambda_target_time(target_interval)
-    run_time = self.run_lambda_timed()
+    desired_rate = data["desired_rate"]
+    num_instances = data["num_instances"]
 
-    spare_time = target_interval - run_time
-
-    if spare_time >= 0
-      sleep(spare_time)
-      return 0
-    else
-      return -spare_time
-    end
+    @target_interval = 1.0 / ((desired_rate.to_f / @num_threads.to_f) / num_instances.to_f)
   end
 
   # Run lambda for the appropriate interval.
@@ -144,17 +137,33 @@ class DriverChild
     cur_debt = 0
 
     while true do
-      # Small adjustment to account for other operations; constant.
-      # Will drift over time.
-      cur_debt = run_lambda_target_time(@target_interval - cur_debt)
-      num_iterations -= 1
+      beginning_time = Time.now
+      @lambda.call()
+      end_time = Time.now
 
+      taken_time = (end_time - beginning_time).to_f
+      spare_time = @target_interval - taken_time - cur_debt
+
+      if spare_time >= 0
+        sleep(spare_time)
+      end
+
+      # If spare time is negative, there is debt; if positive, we've slept for spare_time and have no debt.
+      # We get the max of 0, and negative spare_time
+      cur_debt =  0 > -spare_time ? 0 : -spare_time
+
+      num_iterations -= 1
       # This is where we could randomize the target_interval; +- to debt randomly.
+
+      # If end_time is too far from last_updated, we update.
+      if end_time - @last_update > @update_interval
+        self.get_driver_data()
+      end
+
+      # Code for debugging and testing; can remove in actual driver.
       if stop and num_iterations <= 0
         break
       end
-
     end
-
   end
 end
