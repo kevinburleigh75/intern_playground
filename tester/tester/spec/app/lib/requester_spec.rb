@@ -149,6 +149,9 @@ RSpec.describe DriverData do
   end
 end
 
+RSpec.describe Driver do
+end
+
 RSpec.describe DriverChild do
   before(:each) do
     PingerData.create!(
@@ -163,7 +166,7 @@ RSpec.describe DriverChild do
 
   let(:driver_child) {
     lambda = -> { }
-    DriverChild.new(lambda, driver_data, 1, 1)
+    DriverChild.new(lambda, driver_data, 1, 5)
   }
 
   context 'when driver_child is initiated with above param' do
@@ -191,7 +194,6 @@ RSpec.describe DriverChild do
     end
   end
 
-
     # 2.5 percent tolerance
     it 'takes about one seconds to to run everything' do
 
@@ -200,5 +202,24 @@ RSpec.describe DriverChild do
       end_time = Time.now
 
       expect(end_time - beginning_time).to be_an_between(0.975, 1.025)
+    end
+
+    it 'takes less than one second to run five iterations when rate is updated' do
+      driver_child = DriverChild.new(-> { }, driver_data, 1, 0.2)
+
+      pinger_data = PingerData.first
+      pinger_data.rate = 30
+      pinger_data.num_instances = 1
+      pinger_data.save()
+
+      driver_data.pull_data()
+
+      beginning_time = Time.now
+      driver_child.run_many(stop = true, num_iterations = 5)
+      end_time = Time.now
+
+      # One or two iterations at 0.2 seconds, four or three iterations at 0.03333333333 seconds
+      # Estimated 0.4 + .09, or 0.2 + 0.12. Lower bound is 0.32; if below, then it is all at faster rate.
+      expect(end_time - beginning_time).to be_an_between(0.32, 0.55)
     end
 end

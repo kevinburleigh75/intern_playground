@@ -103,10 +103,17 @@ end
 
 class Driver
   # Numthreads needs to be an os call with logic depending on the type of EC2 Instance
-  def initialize()
+  def initialize(lambda, num_threads, driver_update_interval, thread_update_interval)
 
   end
 
+  def run()
+
+  end
+
+  def controller_thread()
+    
+  end
 end
 
 # Need to inline code to make considerations for parallelism.
@@ -116,6 +123,7 @@ class DriverChild
     @lambda = lambda
     @num_threads = num_threads
     @driver_data = driver_data
+    @update_interval = update_interval
     @target_interval = nil
     @last_update = nil
 
