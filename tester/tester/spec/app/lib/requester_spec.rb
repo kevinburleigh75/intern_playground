@@ -150,6 +150,68 @@ RSpec.describe DriverData do
 end
 
 RSpec.describe Driver do
+  let(:driver) {
+    PingerData.create!(
+        rate: 10,
+        num_instances: 1
+    )
+
+    Driver.new(-> {}, 5,
+               0.2, 0.2,
+               stop = true, num_iterations = 5)
+  }
+
+
+  context 'always' do
+
+    before(:each) do
+      PingerData.create!(
+          rate: 10,
+          num_instances: 1
+      )
+    end
+
+    it 'make sure it finishes' do
+      driver.run()
+
+      # We expect this line to be reached.
+      # Bad.
+      expect(1).to eq(1)
+    end
+
+    it 'finishes in an expected amount of time' do
+      # Waits until each thread has run it five times.
+      # Can double the rate for the same amount of time as a single child.
+      driver.instance_variable_set(:@num_threads, 2)
+
+      expect(PingerData.first).to_not be_nil
+      beginning_time = Time.now
+      driver.run()
+      end_time = Time.now
+
+      expect(end_time - beginning_time).to be_an_between(0.975, 1.025)
+    end
+
+    it 'finishes faster when you update the rate' do
+      # Waits until each thread has run it five times.
+      # Can double the rate for the same amount of time as a single child.
+      driver.instance_variable_set(:@num_threads, 2)
+
+      pinger_data = PingerData.first
+      pinger_data.rate = 500
+      pinger_data.num_instances = 1
+      pinger_data.save()
+
+      expect(PingerData.first).to_not be_nil
+      beginning_time = Time.now
+      driver.run()
+      end_time = Time.now
+
+      expect(end_time - beginning_time).to be_an_between(0.32, 0.55)
+    end
+
+  end
+
 end
 
 RSpec.describe DriverChild do
@@ -176,7 +238,6 @@ RSpec.describe DriverChild do
     end
 
     it 'changes interval when pointer driver_data object is updated and wants to update' do
-
       pinger_data = PingerData.first
       expect(pinger_data.rate).to eq(5)
       expect(pinger_data.num_instances).to eq(1)

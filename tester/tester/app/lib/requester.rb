@@ -86,14 +86,14 @@ class DriverData
     pinger = PingerData.first
 
     if pinger.nil?
+      puts "DB is empty!"
       raise "Database is empty!"
     end
 
     @internal_dict = {
         "desired_rate" => pinger.rate,
-        "num_instances" =>pinger.num_instances
+        "num_instances" => pinger.num_instances
     }
-    return @internal_dict
   end
 
   def return_data()
@@ -103,16 +103,55 @@ end
 
 class Driver
   # Numthreads needs to be an os call with logic depending on the type of EC2 Instance
-  def initialize(lambda, num_threads, driver_update_interval, thread_update_interval)
-
+  def initialize(lambda, num_threads,
+                 dvr_upd_intvl, chld_upd_invl,
+                 stop = false, num_iterations = 10)
+    @lambda = lambda
+    @num_threads = num_threads
+    @dvr_upd_intvl = dvr_upd_intvl
+    @chld_upd_invl = chld_upd_invl
+    @stop = stop
+    @num_iterations = num_iterations
+    # Create a new driver_data object.
+    @driver_data = DriverData.new()
+    @threads = nil
   end
 
+  # num_threads, and one controller thread.
   def run()
-
+    @threads = (@num_threads + 1).times.map do |thread_idx|
+      if thread_idx == 0
+        Thread.new do
+          controller_thread()
+        end
+      else
+        Thread.new do
+          child = DriverChild.new(@lambda, @driver_data, @num_threads, @chld_upd_invl)
+          child.run_many(@stop, @num_iterations)
+        end
+      end
+    end
+    @threads.drop(1).each{|tt| tt.join }
+    @threads[0].exit()
   end
 
   def controller_thread()
-    
+    puts "PingerData at controller_thread start!"
+    puts PingerData.first
+    while true do
+      sleep(@dvr_upd_intvl)
+      begin
+        @driver_data.pull_data()
+      rescue
+        # Kill all other threads if this fails.
+        # I have no idea what to do.
+        @threads.drop(1).each{|tt| tt.kill }
+
+        # Code here to account?
+        puts "Invalid update of driver_data"
+        raise "Invalid Update of driver_data!"
+      end
+    end
   end
 end
 
@@ -141,7 +180,7 @@ class DriverChild
   end
 
   # Run lambda for the appropriate interval.
-  def run_many(stop = False, num_iterations = 5)
+  def run_many(stop = false, num_iterations = 5)
     cur_debt = 0
 
     while true do
@@ -162,7 +201,6 @@ class DriverChild
 
       num_iterations -= 1
       # This is where we could randomize the target_interval; +- to debt randomly.
-
       # If end_time is too far from last_updated, we update.
       if end_time - @last_update > @update_interval
         self.get_driver_data()
