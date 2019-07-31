@@ -119,9 +119,17 @@ class Driver
 
   # num_threads, and one controller thread.
   def run()
+    # Pinger data before run
+    puts "PingerData at run start"
+    puts PingerData.first
     @threads = (@num_threads + 1).times.map do |thread_idx|
       if thread_idx == 0
+        puts "PingerData before thread creation"
+        puts PingerData.first
         Thread.new do
+          puts "PingerData after thread creation"
+          puts PingerData.first
+
           controller_thread()
         end
       else
@@ -131,16 +139,18 @@ class Driver
         end
       end
     end
+
     @threads.drop(1).each{|tt| tt.join }
     @threads[0].exit()
   end
 
   def controller_thread()
-    puts "PingerData at controller_thread start!"
-    puts PingerData.first
     while true do
       sleep(@dvr_upd_intvl)
+
       begin
+        puts "PingerData at controllerThread Loop"
+        puts PingerData.first
         @driver_data.pull_data()
       rescue
         # Kill all other threads if this fails.
