@@ -125,9 +125,11 @@ class Driver
     @threads = (@num_threads + 1).times.map do |thread_idx|
       if thread_idx == 0
         puts "PingerData before thread creation"
+        puts PingerData.object_id
         puts PingerData.first
         Thread.new do
           puts "PingerData after thread creation"
+          puts PingerData.object_id
           puts PingerData.first
 
           controller_thread()
