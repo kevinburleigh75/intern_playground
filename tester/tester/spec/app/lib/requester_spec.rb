@@ -198,7 +198,7 @@ RSpec.describe Driver do
       driver.instance_variable_set(:@num_threads, 2)
 
       pinger_data = PingerData.first
-      pinger_data.rate = 500
+      pinger_data.rate = 60
       pinger_data.num_instances = 1
       pinger_data.save()
 
