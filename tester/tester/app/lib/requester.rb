@@ -86,7 +86,6 @@ class DriverData
     pinger = PingerData.first
 
     if pinger.nil?
-      puts "DB is empty!"
       raise "Database is empty!"
     end
 
@@ -120,19 +119,21 @@ class Driver
   # num_threads, and one controller thread.
   def run()
     # Pinger data before run
-    puts "PingerData at run start"
-    puts PingerData.first
     @threads = (@num_threads + 1).times.map do |thread_idx|
       if thread_idx == 0
-        puts "PingerData before thread creation"
-        puts PingerData.object_id
-        puts PingerData.first
         Thread.new do
-          puts "PingerData after thread creation"
-          puts PingerData.object_id
-          puts PingerData.first
-
-          controller_thread()
+          # According to https://medium.com/points-san-francisco/threading-with-rails-eeb843bfa20
+          # in Ruby 5, this wrapper should prevent connection leaks and the connection pool from
+          # running out. However, this is not an issue I ran into.
+          #
+          # The original issue I had was with tests, not the program.
+          # https://stackoverflow.com/questions/4703551/threading-in-rails-console-with-active-record-doesnt-find-model-in-the-database
+          #
+          # Eventually solved by changing database cleaner in rails_helper.rb to use truncation
+          # instead of transaction.
+          Rails.application.reloader.wrap do
+            controller_thread()
+          end
         end
       else
         Thread.new do
@@ -151,8 +152,6 @@ class Driver
       sleep(@dvr_upd_intvl)
 
       begin
-        puts "PingerData at controllerThread Loop"
-        puts PingerData.first
         @driver_data.pull_data()
       rescue
         # Kill all other threads if this fails.
@@ -160,7 +159,6 @@ class Driver
         @threads.drop(1).each{|tt| tt.kill }
 
         # Code here to account?
-        puts "Invalid update of driver_data"
         raise "Invalid Update of driver_data!"
       end
     end

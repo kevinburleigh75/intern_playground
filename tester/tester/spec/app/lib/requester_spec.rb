@@ -180,7 +180,7 @@ RSpec.describe Driver do
     end
 
     it 'finishes in an expected amount of time' do
-      # Waits until each thread has run it five times.
+        # Waits until each thread has run it five times.
       # Can double the rate for the same amount of time as a single child.
       driver.instance_variable_set(:@num_threads, 2)
 
