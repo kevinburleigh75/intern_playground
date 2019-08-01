@@ -13,6 +13,7 @@ There are three classes.
     
  - Driver
     - Handles all the running of the actual tester.
+    - Does randomize start time.
     - Initalized as follows:
         - `initialize(lambda, num_threads, dvr_upd_intvl, chld_upd_invl, stop = false, num_iterations = 10)`
         - `lambda` - the desired lambda

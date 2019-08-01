@@ -137,6 +137,7 @@ class Driver
         end
       else
         Thread.new do
+          sleep(0.25*rand())
           child = DriverChild.new(@lambda, @driver_data, @num_threads, @chld_upd_invl)
           child.run_many(@stop, @num_iterations)
         end

@@ -189,7 +189,7 @@ RSpec.describe Driver do
       driver.run()
       end_time = Time.now
 
-      expect(end_time - beginning_time).to be_an_between(0.975, 1.025)
+      expect(end_time - beginning_time).to be_an_between(0.975, 1.025 + 0.25)
     end
 
     it 'finishes faster when you update the rate' do
@@ -207,7 +207,7 @@ RSpec.describe Driver do
       driver.run()
       end_time = Time.now
 
-      expect(end_time - beginning_time).to be_an_between(0.32, 0.55)
+      expect(end_time - beginning_time).to be_an_between(0.32, 0.55 + 0.25)
     end
 
   end
